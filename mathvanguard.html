@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Vanguard - Elite Olympiad Training</title>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+  <style>
+    :root {
+      --transition-speed: 0.6s;
+      
+      /* Dark Horizon Styling Variables */
+      --bg-base: #030712;
+      --bg-gate: #0b0f19;
+      --text-main: #f3f4f6;
+      --text-muted: #acb3bf;
+      --glass-bg: rgba(17, 24, 39, 0.45);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-glow: rgba(14, 165, 233, 0.25);
+      --nav-bg: rgba(3, 7, 18, 0.75);
+      --grid-opacity: rgba(14, 165, 233, 0.07);
+      --plasma-1: #0ea5e9;
+      --plasma-2: #f59e0b;
+      --heading-gradient: linear-gradient(135deg, #ffffff 30%, #9ca3af 100%);
+      --formula-color: #38bdf8;
+      --btn-glow: rgba(245, 158, 11, 0.5);
+      --thumbs-glow: rgba(251, 191, 36, 0.4);
+      --tech-panel-bg: rgba(11, 15, 25, 0.95);
+      --glyph-color: rgba(14, 165, 233, 0.12);
+      --glyph-shadow: rgba(14, 165, 233, 0.2);
+      --thumb-main: #fbbf24;
+      --thumb-extrude: #d97706;
+      --thumb-back: #92400e;
+    }
+
+    [data-theme="light"] {
+      /* Premium Crimson Red Horizon Styling Variables */
+      --bg-base: #450a0a; 
+      --bg-gate: #7f1d1d; 
+      --text-main: #fef2f2; 
+      --text-muted: #fecaca; 
+      --glass-bg: rgba(255, 255, 255, 0.18); 
+      --glass-border: rgba(255, 255, 255, 0.3); 
+      --glass-glow: rgba(254, 240, 138, 0.3);
+      --nav-bg: rgba(127, 29, 29, 0.8);
+      --grid-opacity: rgba(254, 240, 138, 0.12); 
+      --plasma-1: #b91c1c; 
+      --plasma-2: #f97316; 
+      --heading-gradient: linear-gradient(135deg, #ffffff 30%, #fde047 100%); 
+      --formula-color: #fde047; 
+      --btn-glow: rgba(253, 224, 71, 0.4);
+      --thumbs-glow: rgba(253, 224, 71, 0.45);
+      --tech-panel-bg: rgba(107, 17, 17, 0.98);
+      --glyph-color: rgba(254, 240, 138, 0.14);
+      --glyph-shadow: rgba(254, 240, 138, 0.25);
+      --thumb-main: #fde047;
+      --thumb-extrude: #ea580c;
+      --thumb-back: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      overflow-x: hidden;
+      min-height: 540vh; 
+      cursor: none !important; 
+      transition: background-color var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1), color var(--transition-speed) ease;
+    }
+
+    input, select, button, a, .interactive-target, video {
+      cursor: none !important;
+    }
+
+    /* ==========================================
+       DYNAMIC HARDWARE CURSOR TRAIL
+       ========================================== */
+    .custom-cursor-aura {
+      position: fixed; top: 0; left: 0; width: 10px; height: 10px;
+      background: var(--thumb-main); border-radius: 50%; pointer-events: none;
+      z-index: 10005; transform: translate(-50%, -50%); will-change: transform;
+    }
+    .custom-cursor-blur {
+      position: fixed; top: 0; left: 0; width: 40px; height: 40px;
+      border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 50%;
+      pointer-events: none; z-index: 10004; transform: translate(-50%, -50%);
+      will-change: transform; transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
+    }
+    body.link-hovered .custom-cursor-blur {
+      width: 60px; height: 60px; background: rgba(251, 191, 36, 0.1); border-color: var(--thumb-main);
+    }
+
+    /* ==========================================
+       NEW MATHEMATICAL FX LAYERS (CANVAS)
+       ========================================== */
+    #matrixCanvas, #topologyCanvas, #tensorCanvas, #hypercubeCanvas {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: -2; opacity: 0; pointer-events: none; transition: opacity 0.8s ease;
+    }
+    
+    #mathRainContainer {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 1; pointer-events: none; overflow: hidden;
+    }
+    .floating-math-node {
+      position: absolute; color: var(--formula-color); font-size: 1.8rem; opacity: 0; 
+      filter: drop-shadow(0 0 10px var(--formula-color)); pointer-events: none; font-family: 'Times New Roman', serif !important;
+    }
+
+    /* ==========================================
+       TECHNICAL POWER OVERLAY SYSTEM
+       ========================================== */
+    .portal-loader-vault {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #030712; z-index: 1001; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 20px; will-change: opacity;
+    }
+
+    .tech-console-housing {
+      position: relative; width: 260px; height: 260px; display: flex; align-items: center; justify-content: center; transform-style: preserve-3d;
+    }
+
+    .radar-orbit-ring {
+      position: absolute; border: 1px dashed rgba(251, 191, 36, 0.25); border-radius: 50%; pointer-events: none;
+    }
+    .ring-outer { width: 100%; height: 100%; animation: rotClockwise 25s linear infinite; }
+    .ring-mid { width: 82%; height: 82%; border: 1px double rgba(14, 165, 233, 0.2); animation: rotCounterClockwise 15s linear infinite; }
+
+    .quantum-switch-node {
+      width: 140px; height: 140px; border-radius: 50%;
+      background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+      border: 3px solid #374151; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 2px 5px rgba(255, 255, 255, 0.05);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      position: relative; z-index: 5; transform-style: preserve-3d; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .quantum-switch-node:hover {
+      border-color: var(--thumb-main); box-shadow: 0 0 40px rgba(251, 191, 36, 0.25), inset 0 0 15px rgba(251, 191, 36, 0.1);
+      transform: scale(1.03) translateZ(10px);
+    }
+    .quantum-switch-node:active { transform: scale(0.97) translateZ(0px); }
+
+    .switch-indicator-lamp { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 12px #ef4444; transition: all 0.4s ease; }
+    .switch-label-status { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; color: #9ca3af; transition: color 0.4s ease; }
+    .switch-label-state { font-size: 18px; font-weight: 900; letter-spacing: 1px; color: #ef4444; transition: all 0.4s ease; }
+
+    .portal-loader-vault.engine-engaged .quantum-switch-node { border-color: #10b981 !important; box-shadow: 0 0 50px rgba(16, 185, 129, 0.4) !important; }
+    .portal-loader-vault.engine-engaged .switch-indicator-lamp { background: #10b981; box-shadow: 0 0 15px #10b981; }
+    .portal-loader-vault.engine-engaged .switch-label-state { color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+    .portal-loader-vault.engine-engaged .switch-label-status { color: #ffffff; }
+
+    .vault-hint-text { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 6px; font-weight: 800; opacity: 0.6; margin-top: 10px; }
+    .system-telemetry-log { font-family: monospace; font-size: 9px; color: rgba(14, 165, 233, 0.5); letter-spacing: 1.5px; text-transform: uppercase; }
+
+    @keyframes rotClockwise { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes rotCounterClockwise { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+
+    /* ==========================================
+       SIDEBAR CONTROL DECK & FX PANEL
+       ========================================== */
+    .sidebar {
+      position: fixed; left: 0; top: 0; height: 100vh; width: 64px;
+      background-color: var(--nav-bg); border-right: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      display: flex; flex-direction: column; align-items: center; padding-top: 100px;
+      z-index: 999; box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+    }
+    
+    .sidebar-btn {
+      background: none; border: none; color: var(--text-muted); padding: 15px 0;
+      cursor: none; display: flex; flex-direction: column; align-items: center;
+      font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+      opacity: 0.7; transition: all 0.3s;
+    }
+    .sidebar-btn:hover { opacity: 1; color: var(--thumb-main); transform: scale(1.1); }
+    .sidebar-btn svg { margin-bottom: 5px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.1)); }
+
+    .effects-panel {
+      position: fixed; left: 64px; top: 0; height: 100vh; width: 260px;
+      background-color: var(--tech-panel-bg); border-right: 1px solid var(--glass-border);
+      box-shadow: 10px 0 30px rgba(0,0,0,0.6);
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      z-index: 998; padding: 25px; box-sizing: border-box;
+      display: flex; flex-direction: column;
+    }
+    .effects-panel.hidden { transform: translateX(-100%); }
+
+    .panel-header {
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--text-main); margin-bottom: 25px;
+      border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;
+    }
+    .close-btn {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 24px; cursor: none; transition: color 0.3s, transform 0.3s;
+    }
+    .close-btn:hover { color: var(--neon-red); transform: scale(1.2) rotate(90deg); }
+
+    .effects-list { display: flex; flex-direction: column; gap: 10px; }
+    
+    .effect-option {
+      background-color: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+      color: var(--text-muted); padding: 12px 18px; border-radius: 12px;
+      cursor: none; font-weight: 800; font-size: 11px; letter-spacing: 1.5px;
+      text-transform: uppercase; text-align: left; display: flex; align-items: center;
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .effect-option:hover { background-color: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); color: var(--text-main); }
+    .effect-option .dot {
+      display: inline-block; width: 8px; height: 8px; background-color: rgba(255,255,255,0.2);
+      border-radius: 50%; margin-right: 12px; transition: all 0.3s;
+    }
+
+    .effect-option.active {
+      background-color: var(--thumb-main); color: #030712; border-color: var(--thumb-main);
+      box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+    }
+    [data-theme="light"] .effect-option.active {
+      background-color: var(--thumb-extrude); color: #fff; border-color: var(--thumb-extrude);
+      box-shadow: 0 0 15px rgba(234, 88, 12, 0.5);
+    }
+    .effect-option.active .dot { background-color: #030712; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+    [data-theme="light"] .effect-option.active .dot { background-color: #fff; }
+
+    /* ==========================================
+       GPU COMPOSITOR BACKGROUND AMBIENCE
+       ========================================== */
+    .viewport-fixed-scenery {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: -1; overflow: hidden; perspective: 1400px; transform-style: preserve-3d;
+      padding-left: 64px; /* Offset for sidebar */
+    }
+    .parallax-layer-grid {
+      position: absolute; width: 200%; height: 200%; top: -50%; left: -50%;
+      background-image: linear-gradient(var(--grid-opacity) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--grid-opacity) 1.5px, transparent 1.5px);
+      background-size: 80px 80px; transform: translate3d(0,0,-500px) scale(1.6); will-change: transform; transition: background-image 0.4s ease, background-size 0.4s ease;
+    }
+    .parallax-layer-grid.grid-boosted { --grid-opacity: rgba(251, 191, 36, 0.25) !important; background-size: 40px 40px; }
+    .plasma-node { position: absolute; border-radius: 50%; filter: blur(130px); opacity: 0.45; will-change: transform; transform: translate3d(0,0,-300px); backface-visibility: hidden; transition: background var(--transition-speed) ease; }
+    #plasma-cyan { width: 950px; height: 950px; background: var(--plasma-1); top: -10%; left: -5%; }
+    #plasma-amber { width: 1050px; height: 1050px; background: var(--plasma-2); bottom: -15%; right: -5%; }
+
+    .floating-macro-glyph {
+      position: absolute; font-family: 'Times New Roman', serif; font-style: italic; color: var(--glyph-color); text-shadow: 0 0 30px var(--glyph-shadow); user-select: none; will-change: transform; transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), color var(--transition-speed) ease, text-shadow var(--transition-speed) ease;
+    }
+
+    /* ==========================================
+       PREMIUM NAVIGATION STRATUM
+       ========================================== */
+    .vanguard-header {
+      position: fixed; top: 0; left: 64px; width: calc(100% - 64px); z-index: 100; padding: 28px 60px; display: flex; justify-content: space-between; align-items: center; background: rgba(3, 7, 18, 0.15); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border-bottom: 1px solid var(--glass-border); transition: border var(--transition-speed) ease, padding 0.4s ease, background var(--transition-speed) ease;
+    }
+    .vanguard-header.scrolled-shrink { padding: 18px 60px; }
+    .brand-identity { display: flex; align-items: center; gap: 14px; font-size: 24px; font-weight: 900; letter-spacing: 2px; background: var(--heading-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .brand-logo-container { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid var(--thumb-main); box-shadow: 0 0 14px rgba(251, 191, 36, 0.4); background: var(--bg-gate); will-change: transform; transition: border-color var(--transition-speed) ease, background var(--transition-speed) ease; }
+    .brand-logo-container img { width: 100%; height: 100%; object-fit: cover; }
+    .nav-center-cluster { display: flex; align-items: center; gap: 20px; }
+    .nav-matrix { display: flex; align-items: center; gap: 8px; background: var(--nav-bg); padding: 6px; border-radius: 40px; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.15); transition: background var(--transition-speed) ease, border var(--transition-speed) ease; }
+    .nav-matrix-item { padding: 12px 26px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; border-radius: 30px; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+    .nav-matrix-item:hover, .nav-matrix-item.active { color: var(--text-main); background: rgba(255, 255, 255, 0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+    .theme-toggle-control { background: var(--nav-bg); border: 1px solid var(--glass-border); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); box-shadow: 0 10px 30px rgba(0,0,0,0.15); transition: background var(--transition-speed) ease, border var(--transition-speed) ease; }
+    .user-profile-badge { display: flex; align-items: center; gap: 12px; padding: 10px 22px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 40px; backdrop-filter: blur(10px); transition: background var(--transition-speed) ease, border var(--transition-speed) ease; }
+    [data-theme="dark"] .user-profile-badge { background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); }
+    .user-profile-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 14px #10b981; }
+    .user-profile-badge span { font-size: 11px; font-weight: 800; letter-spacing: 1px; color: var(--text-main); }
+
+    /* ==========================================
+       SCROLL RUNWAY CONTAINER STRUCTURE
+       ========================================== */
+    .scroll-scenery-wrapper { position: relative; width: 100%; padding-left: 64px; z-index: 5; opacity: 0; }
+    .scenery-panel { width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center; padding: 0 10%; overflow: hidden; perspective: 1600px; }
+    .hero-layout-box { width: 100%; display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 100px; }
+    .premium-eyebrow { 
+    font-size: 12px; 
+    text-transform: uppercase; 
+    letter-spacing: 10px; 
+    color: #fde047; 
+    font-weight: 800; 
+    margin-bottom: 22px; 
+    margin-top: 40px; /* Adjust this value as needed */
+}
+    [data-theme="dark"] .premium-eyebrow { color: #fbbf24; }
+    .hero-layout-box h1 { font-size: 72px; font-weight: 900; line-height: 1.05; letter-spacing: -2px; background: var(--heading-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 28px; }
+    .hero-layout-box p { font-size: 20px; color: var(--text-muted); line-height: 1.65; margin-bottom: 44px; }
+    .action-btn-primary { position: relative; padding: 20px 46px; background: linear-gradient(135deg, #fde047 0%, #ca8a04 100%); color: #450a0a; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 2.5px; border: none; border-radius: 40px; overflow: hidden; box-shadow: 0 15px 40px var(--btn-glow); transition: transform 0.3s ease, box-shadow 0.3s ease, background var(--transition-speed) ease; }
+    [data-theme="dark"] .action-btn-primary { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #030712; }
+    .action-btn-primary:hover { transform: translateY(-4px); box-shadow: 0 20px 50px var(--btn-glow); }
+    .action-btn-primary::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: left 0.6s ease; }
+    .action-btn-primary:hover::after { left: 100%; }
+    .perspective-video-frame { width: 100%; height: 500px; transform-style: preserve-3d; }
+    
+    .glass-vector-video-wrapper { width: 100%; height: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 44px; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 60px 110px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.15); transform-style: preserve-3d; will-change: transform; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: all var(--transition-speed) ease, box-shadow 0.5s ease; }
+    .glass-vector-video-wrapper:hover { box-shadow: 0 70px 130px rgba(0,0,0,0.4), 0 0 40px var(--glass-glow); }
+    .fx-boosted-state .glass-vector-video-wrapper, .fx-boosted-state .glass-showcase-board { backdrop-filter: blur(70px) saturate(210%) !important; -webkit-backdrop-filter: blur(70px) saturate(210%) !important; border-color: rgba(251, 191, 36, 0.55) !important; box-shadow: 0 80px 140px rgba(0, 0, 0, 0.65), 0 0 60px var(--glass-glow) !important; }
+    .glass-vector-video-wrapper video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+
+    .glass-showcase-board { background: var(--glass-bg); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border: 1px solid var(--glass-border); border-radius: 48px; padding: 80px; max-width: 1250px; width: 100%; box-shadow: 0 60px 120px rgba(0,0,0,0.35); display: grid; grid-template-columns: 1.2fr 1fr; gap: 90px; align-items: center; transform-style: preserve-3d; will-change: transform, opacity; transition: all var(--transition-speed) ease, box-shadow var(--transition-speed) ease; }
+    .glass-showcase-board > div { transform-style: preserve-3d; }
+    .glass-showcase-board h2, .glass-showcase-board p, .glass-showcase-board .action-btn-primary { transform: translateZ(60px); }
+    .glass-showcase-board h2 { font-size: 44px; font-weight: 900; line-height: 1.15; background: var(--heading-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 24px; letter-spacing: -1px; }
+    .glass-showcase-board p { color: var(--text-muted); font-size: 17px; line-height: 1.75; margin-bottom: 40px; }
+
+    .interactive-terminal-rack { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); border-radius: 28px; padding: 40px; transform-style: preserve-3d; transform: translateZ(40px); transition: background var(--transition-speed) ease, border var(--transition-speed) ease; }
+    .terminal-row { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--glass-border); border-radius: 18px; margin-bottom: 14px; transition: transform 0.3s ease, background 0.3s ease; }
+    .terminal-row:last-child { margin-bottom: 0; }
+    .terminal-row:hover { transform: translateZ(30px) scale(1.02); background: rgba(255,255,255,0.08); }
+    .terminal-row .formula { font-size: 17px; color: var(--formula-color); font-weight: 500; transition: color var(--transition-speed) ease; }
+    .katex { font-family: 'Times New Roman', serif !important; }
+    .badge-status { padding: 7px 14px; border-radius: 10px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    /* ==========================================
+       TRUE HYPER-DYNAMIC 3D COHERENT THUMBS ENGINE
+       ========================================== */
+    .matrix-thumbs-runway { position: relative; width: 100%; height: 95vh; display: flex; flex-direction: column; align-items: center; justify-content: center; perspective: 1800px; transform-style: preserve-3d; margin-top: 50px; overflow: visible; }
+    .thumbs-runway-title { text-align: center; z-index: 50; transform: translateZ(250px); pointer-events: none; margin-bottom: auto; padding-top: 60px;}
+    .thumbs-runway-title h2 { font-size: 54px; font-weight: 900; background: var(--heading-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1.5px; margin-bottom: 12px; }
+    .thumbs-runway-title p { font-size: 16px; color: var(--text-muted); letter-spacing: 4px; text-transform: uppercase; font-weight: 700; }
+    .3d-thumbs-stage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: auto; transform-style: preserve-3d; z-index: 10; }
+    
+    .isometric-thumbs-node { position: absolute; width: 160px; height: 160px; transform-style: preserve-3d; will-change: transform, opacity; opacity: 0; cursor: none !important; }
+    .thumbs-3d-mesh { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .mesh-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 28px; backface-visibility: visible; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), background 0.4s ease; }
+    .layer-front { background: rgba(251, 191, 36, 0.15); border: 2px solid var(--thumb-main); backdrop-filter: blur(10px); color: var(--thumb-main); box-shadow: 0 15px 45px var(--thumbs-glow), inset 0 2px 4px rgba(255,255,255,0.2); transform: translateZ(24px); z-index: 3; }
+    .layer-mid-1 { background: var(--thumb-extrude); transform: translateZ(12px); opacity: 0.85; z-index: 2; border: 1px solid rgba(0,0,0,0.2); }
+    .layer-mid-2 { background: var(--thumb-extrude); transform: translateZ(0px); opacity: 0.7; z-index: 1; }
+    .layer-mid-3 { background: var(--thumb-back); transform: translateZ(-12px); opacity: 0.5; z-index: 0; }
+    .layer-back { background: rgba(17, 24, 39, 0.9); border: 2px solid var(--thumb-back); box-shadow: 0 40px 70px rgba(0,0,0,0.6); transform: translateZ(-24px); z-index: -1; }
+    .mesh-layer svg { width: 65px; height: 65px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 6px 16px rgba(251, 191, 36, 0.7)); transition: transform 0.4s ease; }
+
+    @media(max-width: 1100px) {
+      .hero-layout-box, .glass-showcase-board { grid-template-columns: 1fr; padding: 50px; gap: 50px; text-align: center; }
+      .perspective-video-frame { height: 350px; }
+      .vanguard-header { padding: 20px 30px; left: 0; width: 100%; }
+      .nav-center-cluster { display: none; }
+      .scroll-scenery-wrapper { padding-left: 0; }
+      .sidebar { display: none; } /* Hide sidebar on mobile for space */
+    }
+  </style>
+</head>
+<body>
+
+  <div class="custom-cursor-aura" id="cursorCore"></div>
+  <div class="custom-cursor-blur" id="cursorRing"></div>
+
+  <canvas id="matrixCanvas"></canvas>
+  <div id="mathRainContainer"></div>
+  <canvas id="topologyCanvas"></canvas>
+  <canvas id="tensorCanvas"></canvas>
+  <canvas id="hypercubeCanvas"></canvas>
+
+  <div class="portal-loader-vault" id="portalVaultLayer">
+    <div class="system-telemetry-log" id="initLog">Core State: Standing By</div>
+    
+    <div class="tech-console-housing">
+      <div class="radar-orbit-ring ring-outer"></div>
+      <div class="radar-orbit-ring ring-mid"></div>
+      
+      <button class="quantum-switch-node interactive-target" id="vaultClickTrigger">
+        <div class="switch-indicator-lamp" id="centerLamp"></div>
+        <div class="switch-label-status">System</div>
+        <div class="switch-label-state" id="centerLabel">OFF</div>
+      </button>
+    </div>
+
+    <div class="vault-hint-text">Engage Olympiad Vector Ignition</div>
+  </div>
+
+  <div class="viewport-fixed-scenery">
+    <div class="parallax-layer-grid" id="bgGrid"></div>
+    <div class="plasma-node" id="plasma-cyan"></div>
+    <div class="plasma-node" id="plasma-amber"></div>
+
+    <div class="glyph-cluster-container">
+      <div class="floating-macro-glyph" style="font-size: 26vw; top: -4%; left: 4%;" data-speed="0.2">∫</div>
+      <div class="floating-macro-glyph" style="font-size: 20vw; bottom: 8%; right: 6%;" data-speed="0.4">∇</div>
+      <div class="floating-macro-glyph" style="font-size: 15vw; top: 45%; left: 42%;" data-speed="0.12">∑</div>
+      <div class="floating-macro-glyph" style="font-size: 18vw; bottom: 30%; left: 10%;" data-speed="0.3">∏</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <button id="toggleEffectsMenuBtn" class="sidebar-btn interactive-target">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-11.314l.707.707m11.314 11.314l.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+      <span style="margin-top:6px;">FX</span>
+    </button>
+  </div>
+
+  <div id="effectsPanel" class="effects-panel hidden">
+    <div class="panel-header">
+      <h3 style="margin:0; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main);">Visual Engines</h3>
+      <button id="closeEffectsBtn" class="close-btn interactive-target">&times;</button>
+    </div>
+    
+    <div class="effects-list">
+      <button class="effect-option interactive-target" id="toggleFXBtn"><span class="dot"></span> Bloom FX</button>
+      <button class="effect-option interactive-target" id="toggleGlyphBtn"><span class="dot"></span> Macro Glyphs</button>
+      <button class="effect-option interactive-target active" id="toggleAudioBtn"><span class="dot"></span> Synth Audio</button>
+      <button class="effect-option interactive-target" id="toggleGridBtn"><span class="dot"></span> Vector Grid</button>
+      <button class="effect-option interactive-target" id="toggleMatrixBtn"><span class="dot"></span> Matrix Rain</button>
+      <button class="effect-option interactive-target" id="toggleMathRainBtn"><span class="dot"></span> Math Drift</button>
+      <button class="effect-option interactive-target" id="toggleTopologyBtn"><span class="dot"></span> 3D Topology</button>
+      <button class="effect-option interactive-target" id="toggleTensorBtn"><span class="dot"></span> Tensor Field</button>
+      <button class="effect-option interactive-target" id="toggleHypercubeBtn"><span class="dot"></span> Tesseract 4D</button>
+    </div>
+  </div>
+
+  <header class="vanguard-header" id="mainHeader" style="opacity: 0; transform: translateY(-40px);">
+    <div class="brand-identity">
+      <div class="brand-logo-container interactive-target" id="brandingLogoContainer">
+        <img src="logo.png" alt="Math Vanguard Logo">
+      </div>
+      Math Vanguard
+    </div>
+
+    <div class="nav-center-cluster">
+      <nav class="nav-matrix">
+        <a href="mathvanguard.html" class="nav-matrix-item active interactive-target">Home</a>
+        <a href="handouts.html" target="_blank" class="nav-matrix-item interactive-target">Handouts</a>
+        <a href="lectures.html" target="_blank" class="nav-matrix-item interactive-target">Lectures</a>
+        <a href="problemsets.html" target="_blank" class="nav-matrix-item interactive-target">Problem Sets</a>
+        <a href="contact.html" target="_blank" class="nav-matrix-item interactive-target">Contact</a>
+      </nav>
+
+      <button class="theme-toggle-control interactive-target" id="themeToggleBtn" title="Toggle Horizon State">
+        <svg id="themeIcon" viewBox="0 0 24 24" width="20" height="20">
+          <path fill="currentColor" d="M12.1 22c-5.5 0-10-4.5-10-10 0-4.8 3.4-8.8 8-9.8.5-.1 1 .3.9.8-.1.5-.6.8-1.1.9-3.6.7-6.3 3.9-6.3 7.7 0 4.4 3.6 8 8 8 3.8 0 7-2.7 7.7-6.3.1-.5.5-.9 1-.8.5.1.8.6.7 1.1-.9 4.6-5 8-9.9 8z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="user-profile-badge">
+      <div class="dot"></div>
+      <span id="headerProfileName">Ayush Behera</span>
+    </div>
+  </header>
+
+  <div class="scroll-scenery-wrapper" id="contentWrapper">
+
+    <section class="scenery-panel">
+      <div class="hero-layout-box" id="heroLayoutBox">
+        <div>
+          <p class="premium-eyebrow">Elite Olympiad Ecosystem</p>
+          <h1>Master<br>Mathematical Olympiads</h1>
+          <p>Access high-tier problem sets, rigorous proof-writing frameworks, and advanced theorems engineered for supreme performance in the IMO and regional competitions.</p>
+          <button class="action-btn-primary interactive-target" onclick="window.open('problemsets.html', '_blank')">Explore Matrix</button>
+        </div>
+        
+        <div class="perspective-video-frame">
+          <div class="glass-vector-video-wrapper interactive-target" id="heroVideoContainer">
+            <video src="https://res.cloudinary.com/ds21tzogf/video/upload/v1782631785/hero-animation_neocng.mp4" autoplay loop muted playsinline id="heroAnimateVideo"></video>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scenery-panel" id="panelTrigger2">
+      <div class="glass-showcase-board interactive-target" id="showcaseCard2">
+        <div>
+          <h2>Olympiad Handout Repository</h2>
+          <p>Every geometry configuration, number theory sequence, and combinatorial manuscript is carefully curated for elite training. Access exclusive materials and mock tests designed by past Olympiad medalists to sharpen your problem-solving arsenal.</p>
+          <button class="action-btn-primary interactive-target" onclick="window.open('handouts.html', '_blank')" style="background: rgba(255,255,255,0.1); color: inherit; border: 1px solid var(--glass-border); box-shadow: none;">VIEW HANDOUTS</button>
+        </div>
+        <div class="interactive-terminal-rack">
+          <div class="terminal-row"><span class="formula">\(\oint_{C} \mathbf{B} \cdot d\mathbf{l}\)</span><span class="badge-status">Verified</span></div>
+          <div class="terminal-row"><span class="formula">\(e^{i\pi} + 1 = 0\)</span><span class="badge-status">Active</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scenery-panel" id="panelTrigger3">
+      <div class="glass-showcase-board interactive-target" id="showcaseCard3">
+        <div class="interactive-terminal-rack">
+          <div class="terminal-row"><span class="formula">\(\psi(x,t) = A e^{i(kx-\omega t)}\)</span><span class="badge-status" style="background:rgba(255,255,255,0.1); color:var(--formula-color);">Loaded</span></div>
+          <div class="terminal-row"><span class="formula">\(\nabla \times \mathbf{E} = -\frac{\partial \mathbf{B}}{\partial t}\)</span><span class="badge-status" style="background:rgba(245,158,11,0.08); color:#f59e0b;">Pending</span></div>
+        </div>
+        <div>
+          <h2>Advanced Proof Techniques</h2>
+          <p>Master complex multi-variable inequalities, explore projective geometry, and verify rigorous structural proofs with our comprehensive curriculum built specifically for high-level competitive mathematics.</p>
+          <button class="action-btn-primary interactive-target" onclick="window.open('lectures.html', '_blank')">Launch Lectures</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="matrix-thumbs-runway" id="thumbsTriggerSection">
+      <div class="thumbs-runway-title">
+        <h2>Training Module Completed</h2>
+        <p>OLYMPIAD PROBLEM SETS FULLY UNLOCKED</p>
+      </div>
+
+      <div class="3d-thumbs-stage">
+        <div class="isometric-thumbs-node interactive-target" style="left: 10%; top: 25%;" data-depth="0.35" data-rot="25">
+          <div class="thumbs-3d-mesh">
+            <div class="mesh-layer layer-front">
+              <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            </div>
+            <div class="mesh-layer layer-mid-1"></div>
+            <div class="mesh-layer layer-mid-2"></div>
+            <div class="mesh-layer layer-mid-3"></div>
+            <div class="mesh-layer layer-back"></div>
+          </div>
+        </div>
+        
+        <div class="isometric-thumbs-node interactive-target" style="right: 12%; top: 20%;" data-depth="0.5" data-rot="-35">
+          <div class="thumbs-3d-mesh">
+            <div class="mesh-layer layer-front">
+              <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            </div>
+            <div class="mesh-layer layer-mid-1"></div>
+            <div class="mesh-layer layer-mid-2"></div>
+            <div class="mesh-layer layer-mid-3"></div>
+            <div class="mesh-layer layer-back"></div>
+          </div>
+        </div>
+
+        <div class="isometric-thumbs-node interactive-target" style="left: 28%; top: 60%;" data-depth="0.2" data-rot="15">
+          <div class="thumbs-3d-mesh">
+            <div class="mesh-layer layer-front">
+              <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            </div>
+            <div class="mesh-layer layer-mid-1"></div>
+            <div class="mesh-layer layer-mid-2"></div>
+            <div class="mesh-layer layer-mid-3"></div>
+            <div class="mesh-layer layer-back"></div>
+          </div>
+        </div>
+
+        <div class="isometric-thumbs-node interactive-target" style="right: 25%; top: 55%;" data-depth="0.45" data-rot="-18">
+          <div class="thumbs-3d-mesh">
+            <div class="mesh-layer layer-front">
+              <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            </div>
+            <div class="mesh-layer layer-mid-1"></div>
+            <div class="mesh-layer layer-mid-2"></div>
+            <div class="mesh-layer layer-mid-3"></div>
+            <div class="mesh-layer layer-back"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    let audioMuted = false;
+
+    // ==========================================
+    // HARDWARE ACCELERATED AUDIO ENGINE
+    // ==========================================
+    const AudioEngine = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      },
+      playPortalReveal() {
+        if (audioMuted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        
+        const relayOsc = this.ctx.createOscillator();
+        const relayGain = this.ctx.createGain();
+        relayOsc.type = 'triangle';
+        relayOsc.frequency.setValueAtTime(880, now);
+        relayOsc.frequency.setValueAtTime(1200, now + 0.04);
+        relayGain.gain.setValueAtTime(0.2, now);
+        relayGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        relayOsc.connect(relayGain);
+        relayGain.connect(this.ctx.destination);
+        relayOsc.start(now);
+        relayOsc.stop(now + 0.1);
+
+        const engineOsc = this.ctx.createOscillator();
+        const engineGain = this.ctx.createGain();
+        engineOsc.type = 'sawtooth';
+        engineOsc.frequency.setValueAtTime(45, now + 0.05);
+        engineOsc.frequency.exponentialRampToValueAtTime(95, now + 1.2);
+        
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(140, now);
+        filter.frequency.exponentialRampToValueAtTime(50, now + 0.9);
+        
+        engineGain.gain.setValueAtTime(0.6, now + 0.05);
+        engineGain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+        
+        engineOsc.connect(filter);
+        filter.connect(engineGain);
+        engineGain.connect(this.ctx.destination);
+        
+        engineOsc.start(now + 0.05);
+        engineOsc.stop(now + 1.6);
+      },
+      playTick() {
+        if (audioMuted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1400, now);
+        
+        gain.gain.setValueAtTime(0.04, now); 
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.start(now);
+        osc.stop(now + 0.05);
+      },
+      playSnap() {
+        if (audioMuted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(450, now);
+        osc.frequency.setValueAtTime(120, now + 0.05);
+        
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.start(now);
+        osc.stop(now + 0.15);
+      },
+      playTechEngage() {
+        if (audioMuted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(900, now + 0.15);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + 0.2);
+      }
+    };
+
+    // ==========================================
+    // MICRO-INTERACTION HARDWARE CURSOR
+    // ==========================================
+    const cursorCore = document.getElementById('cursorCore');
+    const cursorRing = document.getElementById('cursorRing');
+
+    gsap.set([cursorCore, cursorRing], { xPercent: -50, yPercent: -50 });
+
+    const setCursorX = gsap.quickTo(cursorCore, "x", { duration: 0.05, ease: "power2.out" });
+    const setCursorY = gsap.quickTo(cursorCore, "y", { duration: 0.05, ease: "power2.out" });
+    const setRingX = gsap.quickTo(cursorRing, "x", { duration: 0.25, ease: "power3.out" });
+    const setRingY = gsap.quickTo(cursorRing, "y", { duration: 0.25, ease: "power3.out" });
+
+    window.addEventListener('mousemove', (e) => {
+      setCursorX(e.clientX); setCursorY(e.clientY);
+      setRingX(e.clientX); setRingY(e.clientY);
+    });
+
+    function updateInteractiveTargets() {
+      document.querySelectorAll('.interactive-target, a, button, input, select, .terminal-row, .isometric-thumbs-node, .tech-node-btn, .sidebar-btn').forEach(elem => {
+        elem.addEventListener('mouseenter', () => {
+          document.body.classList.add('link-hovered');
+          AudioEngine.playTick(); 
+        });
+        elem.addEventListener('mouseleave', () => {
+          document.body.classList.remove('link-hovered');
+        });
+      });
+    }
+    updateInteractiveTargets();
+
+    const navLogoContainer = document.getElementById('brandingLogoContainer');
+    navLogoContainer.addEventListener('click', () => {
+      AudioEngine.playSnap();
+      gsap.fromTo(navLogoContainer, { scale: 0.8, rotate: 0 }, { scale: 1, rotate: 360, duration: 0.85, ease: "elastic.out(1.1, 0.4)" });
+    });
+
+    // ==========================================
+    // INITIALIZATION LOGIC & ENGINE SWITCH
+    // ==========================================
+    const vaultClickTrigger = document.getElementById('vaultClickTrigger');
+    const portalVaultLayer = document.getElementById('portalVaultLayer');
+    const centerLabel = document.getElementById('centerLabel');
+    const initLog = document.getElementById('initLog');
+
+    const bootSequenceLogs = [
+      "Initializing IMO problem set database...",
+      "Loading combinatorics and number theory modules...",
+      "Parsing advanced Euclidean geometry theorems...",
+      "Authenticating Olympiad candidate credentials... SUCCESS",
+      "Functional equations matrix linked safely.",
+      "Generating rigorous proof-writing templates...",
+      "Olympiad training modules compiled: STABLE",
+      "Interactive competitive math environment active."
+    ];
+
+    let logSequenceTimer;
+
+    vaultClickTrigger.addEventListener('click', () => {
+      AudioEngine.playPortalReveal(); 
+      document.body.classList.remove('link-hovered');
+      
+      portalVaultLayer.classList.add('engine-engaged');
+      centerLabel.innerText = "ON";
+
+      let logStep = 0;
+      initLog.innerText = bootSequenceLogs[0];
+      
+      logSequenceTimer = setInterval(() => {
+        logStep++;
+        if (logStep < bootSequenceLogs.length) {
+          initLog.innerText = bootSequenceLogs[logStep];
+        } else {
+          clearInterval(logSequenceTimer);
+        }
+      }, 150);
+
+      const revealTimeline = gsap.timeline();
+      
+      revealTimeline.to('.ring-outer', { rotation: "+=720", scale: 1.3, opacity: 0, duration: 0.9, ease: "power4.inOut" });
+      revealTimeline.to('.ring-mid', { rotation: "-=540", scale: 0.7, opacity: 0, duration: 0.9, ease: "power4.inOut" }, "-=0.9");
+      revealTimeline.to(vaultClickTrigger, { scale: 0.85, z: -30, duration: 0.15, ease: "power2.in" });
+      revealTimeline.to(vaultClickTrigger, { scale: 1.3, z: 100, opacity: 0, duration: 0.7, ease: "power4.out" });
+      
+      revealTimeline.to(portalVaultLayer, { opacity: 0, scale: 1.05, filter: "blur(20px)", duration: 0.6, onComplete: () => portalVaultLayer.style.display = 'none' }, "+=0.2");
+      
+      revealTimeline.to('#mainHeader', { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=0.3");
+      revealTimeline.to('.sidebar', { opacity: 1, x: 0, duration: 0.5 }, "-=0.5");
+      revealTimeline.to('#contentWrapper', { opacity: 1, duration: 0.6 }, "-=0.8");
+      revealTimeline.from('#heroLayoutBox', { y: 50, scale: 0.97, duration: 1, ease: "power4.out" }, "-=0.6");
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      localStorage.setItem('mv_li', '1'); 
+      const savedUser = localStorage.getItem('mv_un');
+      if (savedUser) document.getElementById('headerProfileName').innerText = savedUser;
+      
+      // Hide sidebar initially before vault click
+      gsap.set('.sidebar', { opacity: 0, x: -60 });
+    });
+
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('mainHeader');
+      if(window.scrollY > 50) { header.classList.add('scrolled-shrink'); } 
+      else { header.classList.remove('scrolled-shrink'); }
+    });
+
+    gsap.to("#bgGrid", { yPercent: 25, ease: "none", scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: true } });
+    gsap.to("#plasma-cyan", { yPercent: 35, ease: "none", scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: true } });
+    gsap.to("#plasma-amber", { yPercent: -35, ease: "none", scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: true } });
+
+    document.querySelectorAll('.floating-macro-glyph').forEach(glyph => {
+      const shiftSpeed = parseFloat(glyph.getAttribute('data-speed')) * 260;
+      gsap.to(glyph, { y: -shiftSpeed, ease: "none", scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: true } });
+    });
+
+    gsap.fromTo("#showcaseCard2", { scale: 0.92, opacity: 0, y: 80 }, { scale: 1, opacity: 1, y: 0, scrollTrigger: { trigger: "#panelTrigger2", start: "top 85%", end: "top 40%", scrub: 1 } });
+    gsap.fromTo("#showcaseCard3", { scale: 0.92, opacity: 0, y: 80 }, { scale: 1, opacity: 1, y: 0, scrollTrigger: { trigger: "#panelTrigger3", start: "top 85%", end: "top 40%", scrub: 1 } });
+
+    // ==========================================
+    // SIDEBAR MENU TOGGLE LOGIC
+    // ==========================================
+    const toggleEffectsMenuBtn = document.getElementById('toggleEffectsMenuBtn');
+    const closeEffectsBtn = document.getElementById('closeEffectsBtn');
+    const effectsPanel = document.getElementById('effectsPanel');
+
+    toggleEffectsMenuBtn.addEventListener('click', () => {
+      AudioEngine.playSnap();
+      effectsPanel.classList.remove('hidden');
+    });
+
+    closeEffectsBtn.addEventListener('click', () => {
+      AudioEngine.playSnap();
+      effectsPanel.classList.add('hidden');
+    });
+
+    // Close panel if clicked outside
+    document.addEventListener('click', (event) => {
+      if (!effectsPanel.classList.contains('hidden') && 
+          !effectsPanel.contains(event.target) && 
+          !toggleEffectsMenuBtn.contains(event.target)) {
+        effectsPanel.classList.add('hidden');
+      }
+    });
+
+    // ==========================================
+    // REPAMPED HIGH-INTENSITY 3D REVOLVING CARDS 
+    // ==========================================
+    const dynamicTargets = document.querySelectorAll('#heroVideoContainer, #showcaseCard2, #showcaseCard3');
+    dynamicTargets.forEach(card => {
+      let bounds = null;
+      card.addEventListener('mouseenter', () => { bounds = card.getBoundingClientRect(); });
+      card.addEventListener('mousemove', (e) => {
+        if (!bounds) bounds = card.getBoundingClientRect();
+        const centerX = bounds.left + bounds.width / 2;
+        const centerY = bounds.top + bounds.height / 2;
+        const positionX = (e.clientX - centerX) / (bounds.width / 2);
+        const positionY = (e.clientY - centerY) / (bounds.height / 2);
+        const tiltX = positionY * -22; 
+        const tiltY = positionX * 22;  
+        gsap.to(card, { rotateX: tiltX, rotateY: tiltY, transformPerspective: 1400, duration: 0.25, ease: "power1.out", overwrite: "auto" });
+      });
+      card.addEventListener('mouseleave', () => {
+        bounds = null; gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.8, ease: "power3.out", overwrite: "auto" });
+      });
+    });
+
+    // ==========================================
+    // ENHANCED 3D THUMBS UP MATRIX RENDER MOTOR 
+    // ==========================================
+    document.querySelectorAll('.isometric-thumbs-node').forEach(thumb => {
+      const depthMultiplier = parseFloat(thumb.getAttribute('data-depth')) * -350;
+      const staticRotation = parseFloat(thumb.getAttribute('data-rot'));
+      const mesh = thumb.querySelector('.thumbs-3d-mesh');
+
+      gsap.fromTo(thumb, 
+        { y: 300, opacity: 0, rotateY: staticRotation - 35, rotateX: 35 }, 
+        {
+          y: depthMultiplier, opacity: 1, rotateY: staticRotation, rotateX: 20, z: Math.abs(depthMultiplier) * 0.4, ease: "power2.out",
+          scrollTrigger: { trigger: "#thumbsTriggerSection", start: "top 95%", end: "bottom 20%", scrub: 1.2 }
+        }
+      );
+
+      thumb.addEventListener('mousemove', (e) => {
+        const bounds = thumb.getBoundingClientRect();
+        const cX = bounds.left + bounds.width / 2;
+        const cY = bounds.top + bounds.height / 2;
+        const mX = (e.clientX - cX) / (bounds.width / 2);
+        const mY = (e.clientY - cY) / (bounds.height / 2);
+
+        const rotX = 20 + (mY * -25);
+        const rotY = staticRotation + (mX * 25);
+
+        gsap.to(mesh, { rotateX: rotX, rotateY: rotY, scale: 1.12, duration: 0.3, ease: "power2.out", overwrite: "auto" });
+
+        gsap.to(mesh.querySelector('.layer-front'), { transform: "translateZ(55px)", duration: 0.3, ease: "power2.out" });
+        gsap.to(mesh.querySelector('.layer-mid-1'), { transform: "translateZ(25px)", duration: 0.3, ease: "power2.out" });
+        gsap.to(mesh.querySelector('.layer-mid-2'), { transform: "translateZ(0px)", duration: 0.3, ease: "power2.out" });
+        gsap.to(mesh.querySelector('.layer-mid-3'), { transform: "translateZ(-25px)", duration: 0.3, ease: "power2.out" });
+        gsap.to(mesh.querySelector('.layer-back'), { transform: "translateZ(-55px)", duration: 0.3, ease: "power2.out" });
+        gsap.to(mesh.querySelector('svg'), { transform: "scale(1.15) translateZ(15px)", duration: 0.3, ease: "power2.out" });
+      });
+
+      thumb.addEventListener('mouseleave', () => {
+        gsap.to(mesh, { rotateX: 0, rotateY: 0, scale: 1.0, duration: 0.6, ease: "power3.out", overwrite: "auto" });
+        
+        gsap.to(mesh.querySelector('.layer-front'), { transform: "translateZ(24px)", duration: 0.5, ease: "power3.out" });
+        gsap.to(mesh.querySelector('.layer-mid-1'), { transform: "translateZ(12px)", duration: 0.5, ease: "power3.out" });
+        gsap.to(mesh.querySelector('.layer-mid-2'), { transform: "translateZ(0px)", duration: 0.5, ease: "power3.out" });
+        gsap.to(mesh.querySelector('.layer-mid-3'), { transform: "translateZ(-12px)", duration: 0.5, ease: "power3.out" });
+        gsap.to(mesh.querySelector('.layer-back'), { transform: "translateZ(-24px)", duration: 0.5, ease: "power3.out" });
+        gsap.to(mesh.querySelector('svg'), { transform: "scale(1.0) translateZ(0px)", duration: 0.5, ease: "power3.out" });
+      });
+
+      thumb.addEventListener('click', () => {
+        AudioEngine.playSnap();
+        gsap.timeline()
+          .to(mesh, { scale: 0.9, duration: 0.1, ease: "power2.in" })
+          .to(mesh, { scale: 1.15, duration: 0.4, ease: "elastic.out(1.2, 0.4)" });
+      });
+    });
+
+    // ==========================================
+    // HIGH-TECH FX ENGINE RUNTIME DECK CORES
+    // ==========================================
+    const toggleFXBtn = document.getElementById('toggleFXBtn');
+    const toggleGlyphBtn = document.getElementById('toggleGlyphBtn');
+    const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+    const toggleGridBtn = document.getElementById('toggleGridBtn');
+    const toggleMatrixBtn = document.getElementById('toggleMatrixBtn');
+    const toggleMathRainBtn = document.getElementById('toggleMathRainBtn');
+    const toggleTopologyBtn = document.getElementById('toggleTopologyBtn');
+    const toggleTensorBtn = document.getElementById('toggleTensorBtn');
+    const toggleHypercubeBtn = document.getElementById('toggleHypercubeBtn');
+
+    toggleFXBtn.addEventListener('click', () => {
+      AudioEngine.playTechEngage();
+      toggleFXBtn.classList.toggle('active');
+      document.body.classList.toggle('fx-boosted-state');
+    });
+
+    toggleGlyphBtn.addEventListener('click', () => {
+      AudioEngine.playTechEngage();
+      const nodesActive = toggleGlyphBtn.classList.toggle('active');
+      
+      document.querySelectorAll('.floating-macro-glyph').forEach(glyph => {
+        if(nodesActive) {
+          gsap.to(glyph, { rotation: "+=360", opacity: 0.45, scale: 1.1, duration: 2.5, ease: "elastic.out(1, 0.5)" });
+        } else {
+          gsap.to(glyph, { rotation: "0", opacity: 1, scale: 1.0, duration: 1, ease: "power2.inOut" });
+        }
+      });
+    });
+
+    toggleAudioBtn.addEventListener('click', () => {
+      toggleAudioBtn.classList.toggle('active');
+      audioMuted = !audioMuted;
+      if (!audioMuted) AudioEngine.playTechEngage();
+    });
+
+    toggleGridBtn.addEventListener('click', () => {
+      AudioEngine.playTechEngage();
+      toggleGridBtn.classList.toggle('active');
+      document.getElementById('bgGrid').classList.toggle('grid-boosted');
+    });
+
+    // ==========================================
+    // MATHEMATICAL DIGITAL MATRIX RAIN
+    // ==========================================
+    const matrixCanvas = document.getElementById('matrixCanvas');
+    const matrixCtx = matrixCanvas.getContext('2d');
+    let matrixInterval;
+    const mathChars = '∀∃∅∇∈∉∑∏∫∮≈≠≡≤≥⊂⊃⊆⊇∞∆Ωµλθ'.split('');
+    let columns, drops;
+
+    function initMatrixCanvas() {
+      matrixCanvas.width = window.innerWidth;
+      matrixCanvas.height = window.innerHeight;
+      columns = Math.floor(matrixCanvas.width / 16);
+      drops = Array.from({ length: columns }).fill(1);
+    }
+    
+    window.addEventListener('resize', () => {
+      if (toggleMatrixBtn.classList.contains('active')) initMatrixCanvas();
+    });
+
+    function drawMatrixFrame() {
+      matrixCtx.fillStyle = 'rgba(3, 7, 18, 0.1)';
+      matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+      matrixCtx.fillStyle = getComputedStyle(document.body).getPropertyValue('--thumb-main');
+      matrixCtx.font = '16px monospace';
+      
+      for (let i = 0; i < drops.length; i++) {
+        const text = mathChars[Math.floor(Math.random() * mathChars.length)];
+        matrixCtx.fillText(text, i * 16, drops[i] * 16);
+        if (drops[i] * 16 > matrixCanvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    toggleMatrixBtn.addEventListener('click', () => {
+      AudioEngine.playTechEngage();
+      const isActive = toggleMatrixBtn.classList.toggle('active');
+      if (isActive) {
+        initMatrixCanvas();
+        matrixCanvas.style.opacity = '1';
+        matrixInterval = setInterval(drawMatrixFrame, 40);
+      } else {
+        matrixCanvas.style.opacity = '0';
+        clearInterval(matrixInterval);
+      }
+    });
+
+    // ==========================================
+    // DYNAMIC MATH DRIFTING PARTICLES
+    // ==========================================
+    const mathRainContainer = document.getElementById('mathRainContainer');
+    let mathDriftInterval;
+    const mathEquations = [
+      '\\int_a^b f(x) dx', '\\nabla \\times \\mathbf{B}', 'e^{i\\pi}+1=0', 
+      '\\sum_{n=1}^{\\infty} \\frac{1}{n^2}', '\\oint_C \\mathbf{E} \\cdot d\\mathbf{l}', 
+      '\\frac{d}{dx}[\\ln|x|]', '\\iiint_V (\\nabla \\cdot \\mathbf{F}) dV'
+    ];
+
+    function spawnMathNode() {
+      const node = document.createElement('div');
+      node.className = 'floating-math-node';
+      const eq = mathEquations[Math.floor(Math.random() * mathEquations.length)];
+      katex.render(eq, node);
+      node.style.left = (Math.random() * 90) + 'vw';
+      node.style.top = '110vh';
+      mathRainContainer.appendChild(node);
+      
+      gsap.to(node, {
+        y: '-120vh', x: (Math.random() - 0.5) * 300, rotation: (Math.random() - 0.5) * 60,
+        opacity: Math.random() * 0.4 + 0.1, duration: Math.random() * 8 + 6,
+        ease: "none", onComplete: () => node.remove()
+      });
+    }
+
+    toggleMathRainBtn.addEventListener('click', () => {
+      AudioEngine.playTechEngage();
+      const isActive = toggleMathRainBtn.classList.toggle('active');
+      if (isActive) {
+        mathDriftInterval = setInterval(spawnMathNode, 800);
+      } else {
+        clearInterval(mathDriftInterval);
+        mathRainContainer.innerHTML = '';
+      }
+    });
+
+    // ==========================================
+    // REAL-TIME 3D TOPOLOGY (TORUS MESH)
+    // ==========================================
+    const topoCanvas = document.getElementById('topologyCanvas');
+    const topoCtx = topoCanvas.getContext('2d');
+    let topoReq;
+    let topoAngleX = 0, topoAngleY = 0;
+    
+    const tR = 250; 
+    const tr = 100; 
+    const torusNodes = [];
+    for (let i = 0; i < 40; i++) {
+      let ring = [];
+      let u = (i * 2 * Math.PI) / 40;
+      for (let j = 0; j < 20; j++) {
+        let v = (j * 2 * Math.PI) / 20;
+        let x = (tR + tr * Math.cos(v)) * Math.cos(u);
+        let y = (tR + tr * Math.cos(v)) * Math.sin(u);
+        let z = tr * Math.sin(v);
+        ring.push({ x, y, z });
+      }
+      torusNodes.push(ring);
+    }
+
+    function renderTopology() {
+      topoCanvas.width = window.innerWidth;
+      topoCanvas.height = window.innerHeight;
+      topoCtx.clearRect(0, 0, topoCanvas.width, topoCanvas.height);
+      
+      let cx = topoCanvas.width / 2;
+      let cy = topoCanvas.height / 2;
+      
+      topoAngleX += 0.005;
+      topoAngleY += 0.007;
+      
+      let cosX = Math.cos(topoAngleX), sinX = Math.sin(topoAngleX);
+      let cosY = Math.cos(topoAngleY), sinY = Math.sin(topoAngleY);
+      
+      let proj = [];
+      for(let i=0; i<40; i++){
+        let ringProj = [];
+        for(let j=0; j<20; j++){
+           let n = torusNodes[i][j];
+           let x1 = n.x * cosY - n.z * sinY;
+           let z1 = n.x * sinY + n.z * cosY;
+           let y1 = n.y;
+           let y2 = y1 * cosX - z1 * sinX;
+           let z2 = y1 * sinX + z1 * cosX;
+           let fov = 1000;
+           let scale = fov / (fov + z2);
+           ringProj.push({ px: cx + x1 * scale, py: cy + y2 * scale });
+        }
+        proj.push(ringProj);
+      }
+      
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      topoCtx.strokeStyle = isLight ? 'rgba(244, 63, 94, 0.5)' : 'rgba(56, 189, 248, 0.5)';
+      topoCtx.lineWidth = 1.2;
+      topoCtx.shadowBlur = 10;
+      topoCtx.shadowColor = isLight ? 'rgba(244, 63, 94, 0.8)' : 'rgba(56, 189, 248, 0.8)';
+      
+      for(let i=0; i<40; i++){
+        for(let j=0; j<20; j++){
+           let p = proj[i][j];
+           let pNextI = proj[(i+1)%40][j];
+           let pNextJ = proj[i][(j+1)%20];
+           
+           topoCtx.beginPath();
+           topoCtx.moveTo(p.px, p.py);
+           topoCtx.lineTo(pNextI.px, pNextI.py);
+           topoCtx.stroke();
+           
+           topoCtx.beginPath();
+           topoCtx.moveTo(p.px, p.py);
+           topoCtx.lineTo(pNextJ.px, pNextJ.py);
+           topoCtx.stroke();
+        }
+      }
+      topoReq = requestAnimationFrame(renderTopology);
+    }
+
+    toggleTopologyBtn.addEventListener('click', () => {
+      AudioEngine.playTechEngage();
+      const isActive = toggleTopologyBtn.classList.toggle('active');
+      if (isActive) {
+        topoCanvas.style.opacity = '1';
+        renderTopology();
+      } else {
+        topoCanvas.style.opacity = '0';
+        cancelAnimationFrame(topoReq);
+      }
+    });
+
+    // ==========================================
+    // FLUID DYNAMICS (TENSOR VECTOR FIELD)
+    // ==========================================
+    const tensorCanvas = document.getElementById('tensorCanvas');
+    const tenCtx = tensorCanvas.getContext('2d');
+    let tenReq;
+    let tenTime = 0;
+
+    function renderTensorField() {
+        tensorCanvas.width = window.innerWidth;
+        tensorCanvas.height = window.innerHeight;
+        tenCtx.clearRect(0,0, tensorCanvas.width, tensorCanvas.height);
+        
+        const spacing = 45;
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        tenCtx.strokeStyle = isLight ? 'rgba(234, 88, 12, 0.6)' : 'rgba(251, 191, 36, 0.6)';
+        tenCtx.lineWidth = 2;
+        tenCtx.shadowBlur = 8;
+        tenCtx.shadowColor = isLight ? 'rgba(234, 88, 12, 0.8)' : 'rgba(251, 191, 36, 0.8)';
+        
+        tenTime += 0.02;
+        for(let x = 0; x < tensorCanvas.width; x += spacing) {
+           for(let y = 0; y < tensorCanvas.height; y += spacing) {
+               let angle = Math.sin(x * 0.01 + tenTime) + Math.cos(y * 0.01 + tenTime);
+               let len = 15 + 5 * Math.sin(tenTime + x*0.05);
+               let x2 = x + Math.cos(angle) * len;
+               let y2 = y + Math.sin(angle) * len;
+               
+               tenCtx.beginPath();
+               tenCtx.moveTo(x, y);
+               tenCtx.lineTo(x2, y2);
+               tenCtx.stroke();
+               
+               tenCtx.beginPath();
+               tenCtx.arc(x2, y2, 2, 0, Math.PI*2);
+               tenCtx.fillStyle = tenCtx.strokeStyle;
+               tenCtx.fill();
+           }
+        }
+        tenReq = requestAnimationFrame(renderTensorField);
+    }
+
+    toggleTensorBtn.addEventListener('click', () => {
+      AudioEngine.playTechEngage();
+      const isActive = toggleTensorBtn.classList.toggle('active');
+      if (isActive) {
+        tensorCanvas.style.opacity = '1';
+        renderTensorField();
+      } else {
+        tensorCanvas.style.opacity = '0';
+        cancelAnimationFrame(tenReq);
+      }
+    });
+
+    // ==========================================
+    // 4D HYPERCUBE (TESSERACT STEREOGRAPHIC PROJECTION)
+    // ==========================================
+    const hyperCanvas = document.getElementById('hypercubeCanvas');
+    const hyperCtx = hyperCanvas.getContext('2d');
+    let hyperReq;
+    let hAngle = 0;
+
+    const tesseractNodes = [];
+    for(let i=0; i<16; i++) {
+        tesseractNodes.push({
+            x: (i & 1) ? 1 : -1,
+            y: (i & 2) ? 1 : -1,
+            z: (i & 4) ? 1 : -1,
+            w: (i & 8) ? 1 : -1
+        });
+    }
+    
+    const tesseractEdges = [];
+    for(let i=0; i<16; i++) {
+        for(let j=i+1; j<16; j++) {
+            let xor = i ^ j;
+            if(xor === 1 || xor === 2 || xor === 4 || xor === 8) {
+                tesseractEdges.push([i, j]);
+            }
+        }
+    }
+
+    function renderHypercube() {
+        hyperCanvas.width = window.innerWidth;
+        hyperCanvas.height = window.innerHeight;
+        hyperCtx.clearRect(0,0, hyperCanvas.width, hyperCanvas.height);
+        
+        let cx = hyperCanvas.width / 2;
+        let cy = hyperCanvas.height / 2;
+        
+        hAngle += 0.01;
+        let s = Math.sin(hAngle), c = Math.cos(hAngle);
+        
+        const proj3D = [];
+        tesseractNodes.forEach(n => {
+            let x = n.x * c - n.w * s;
+            let w = n.x * s + n.w * c;
+            let y = n.y, z = n.z;
+            
+            let z2 = z * c - w * s;
+            let w2 = z * s + w * c;
+            
+            let distance = 2.5;
+            let wProj = 1 / (distance - w2);
+            
+            let x3 = x * wProj;
+            let y3 = y * wProj;
+            let z3 = z2 * wProj;
+            
+            let tx = x3 * c - z3 * s;
+            let tz = x3 * s + z3 * c;
+            
+            let fov = 400;
+            let scale = fov / (fov + tz * 150); 
+            
+            proj3D.push({
+                px: cx + tx * 150 * scale,
+                py: cy + y3 * 150 * scale
+            });
+        });
+        
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        hyperCtx.strokeStyle = isLight ? 'rgba(220, 38, 38, 0.9)' : 'rgba(16, 185, 129, 0.9)';
+        hyperCtx.lineWidth = 2.5;
+        hyperCtx.shadowBlur = 20;
+        hyperCtx.shadowColor = hyperCtx.strokeStyle;
+        
+        tesseractEdges.forEach(e => {
+            hyperCtx.beginPath();
+            hyperCtx.moveTo(proj3D[e[0]].px, proj3D[e[0]].py);
+            hyperCtx.lineTo(proj3D[e[1]].px, proj3D[e[1]].py);
+            hyperCtx.stroke();
+        });
+        
+        hyperReq = requestAnimationFrame(renderHypercube);
+    }
+
+    toggleHypercubeBtn.addEventListener('click', () => {
+      AudioEngine.playTechEngage();
+      const isActive = toggleHypercubeBtn.classList.toggle('active');
+      if (isActive) {
+        hyperCanvas.style.opacity = '1';
+        renderHypercube();
+      } else {
+        hyperCanvas.style.opacity = '0';
+        cancelAnimationFrame(hyperReq);
+      }
+    });
+
+    // ==========================================
+    // DAY / NIGHT THEME SWITCHER LOGIC
+    // ==========================================
+    const toggleBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
+    const htmlElement = document.documentElement;
+
+    const sunSVGPath = `<path fill="currentColor" d="M12 7c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zm0 8c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3zm0-10c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1s-1 .4-1 1v1c0 .6.4 1 1 1zm0 14c-.6 0-1 .4-1 1v1c0 .6.4 1 1 1s1-.4 1-1v-1c0-.6-.4-1-1-1zm8.5-7.5h-1c-.6 0-1 .4-1 1s.4 1 1 1h1c.6 0 1-.4 1-1s-.4-1-1-1zM5 12c0-.6-.4-1-1-1H3c-.6 0-1 .4-1 1s.4 1 1 1h1c.6 0 1-.4 1-1zm13.1-6.1c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4l.7.7c.4.4 1 .4 1.4 0s.4-1 0-1.4l-.7-.7zM6.6 16.6c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4l.7.7c.4.4 1 .4 1.4 0s.4-1 0-1.4l-.7-.7zm10.8 0l.7.7c.4.4 1 .4 1.4 0s.4-1 0-1.4l-.7-.7c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4zM6.6 6.1l-.7-.7c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4l.7.7c.4.4 1 .4 1.4 0s.4-1 0-1.4z"/>`;
+    const moonSVGPath = `<path fill="currentColor" d="M12.1 22c-5.5 0-10-4.5-10-10 0-4.8 3.4-8.8 8-9.8.5-.1 1 .3.9.8-.1.5-.6.8-1.1.9-3.6.7-6.3 3.9-6.3 7.7 0 4.4 3.6 8 8 8 3.8 0 7-2.7 7.7-6.3.1-.5.5-.9 1-.8.5.1.8.6.7 1.1-.9 4.6-5 8-9.9 8z"/>`;
+
+    toggleBtn.addEventListener('click', () => {
+      AudioEngine.playSnap();
+      const targetTheme = htmlElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      htmlElement.setAttribute('data-theme', targetTheme);
+      
+      if (targetTheme === 'light') {
+        themeIcon.innerHTML = sunSVGPath;
+        gsap.to(toggleBtn, { rotate: 180, duration: 0.5, ease: "back.out(1.5)" });
+      } else {
+        themeIcon.innerHTML = moonSVGPath;
+        gsap.to(toggleBtn, { rotate: 0, duration: 0.5, ease: "back.out(1.5)" });
+      }
+    });
+  </script>
+</body>
+</html>

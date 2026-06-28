@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Vanguard - Technical Transmission Hub</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    :root {
+      --bg-base: #030712;
+      --bg-gate: #0b0f19;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --glass-bg: rgba(11, 15, 25, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --nav-bg: rgba(3, 7, 18, 0.85);
+      --grid-opacity: rgba(14, 165, 233, 0.08);
+      --plasma-1: #0ea5e9;
+      --plasma-2: #f59e0b;
+      --heading-gradient: linear-gradient(135deg, #ffffff 40%, #9ca3af 100%);
+      --formula-color: #38bdf8;
+      --tech-panel-bg: rgba(7, 11, 21, 0.98);
+      --glyph-color: rgba(14, 165, 233, 0.05);
+      --glyph-shadow: rgba(14, 165, 233, 0.2);
+      --thumb-main: #fbbf24;
+      --thumb-extrude: #d97706;
+      --transition-speed: 0.5s;
+    }
+
+    [data-theme="light"] {
+      --bg-base: #2a0808;
+      --bg-gate: #450a0a;
+      --text-main: #fef2f2;
+      --text-muted: #fca5a5;
+      --glass-bg: rgba(69, 10, 10, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --nav-bg: rgba(42, 8, 8, 0.9);
+      --grid-opacity: rgba(254, 240, 138, 0.12);
+      --plasma-1: #dc2626;
+      --plasma-2: #ea580c;
+      --heading-gradient: linear-gradient(135deg, #ffffff 40%, #fde047 100%);
+      --formula-color: #fde047;
+      --tech-panel-bg: rgba(42, 8, 8, 0.98);
+      --glyph-color: rgba(254, 240, 138, 0.08);
+      --glyph-shadow: rgba(254, 240, 138, 0.25);
+      --thumb-main: #fde047;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+
+    body {
+      background: var(--bg-base); color: var(--text-main); overflow-x: hidden; min-height: 100vh;
+      cursor: none !important; transition: background var(--transition-speed), color var(--transition-speed);
+    }
+    input, select, button, a, .interactive-target { cursor: none !important; }
+
+    /* CYBER GLITCH ANIMATION */
+    @keyframes cyberGlitch {
+      0% { filter: hue-rotate(0deg) contrast(1); transform: translate(0); }
+      20% { filter: hue-rotate(-15deg) contrast(1.4); transform: translate(-3px, 2px); }
+      40% { filter: hue-rotate(15deg) contrast(1.2); transform: translate(3px, -2px); }
+      60% { filter: invert(0.1); transform: translate(-2px, 3px); }
+      80% { filter: hue-rotate(-10deg); transform: translate(2px, -3px); }
+      100% { filter: hue-rotate(0deg) contrast(1); transform: translate(0); }
+    }
+    body.glitch-active { animation: cyberGlitch 0.35s ease-out; }
+
+    /* CRT SCANLINES & SCANNER LINE */
+    body::after {
+      content: ""; display: block; position: fixed; inset: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 3px 100%; box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.9);
+      z-index: 9999; pointer-events: none; opacity: 0.65;
+    }
+    .scanner-line {
+      position: fixed; top: 0; left: 0; width: 100%; height: 2px;
+      background: var(--formula-color); box-shadow: 0 0 15px var(--formula-color), 0 0 40px var(--formula-color);
+      opacity: 0.3; z-index: 9998; pointer-events: none; animation: scanLineDrop 6s ease-in-out infinite;
+    }
+    @keyframes scanLineDrop { 0%, 100% { transform: translateY(-10px); opacity: 0; } 10%, 50% { opacity: 0.5; } 50% { transform: translateY(100vh); } 90% { opacity: 0; } }
+
+    /* ULTRA-RESPONSIVE CUSTOM CURSOR */
+    .cur-dot { position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: var(--thumb-main); border-radius: 50%; pointer-events: none; z-index: 10005; transform: translate(-50%, -50%); }
+    .cur-ring { position: fixed; top: 0; left: 0; width: 36px; height: 36px; border: 1.5px solid rgba(251, 191, 36, 0.4); border-radius: 50%; pointer-events: none; z-index: 10004; transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, background 0.3s, border-color 0.3s, box-shadow 0.3s; }
+    body.hov .cur-ring { width: 54px; height: 54px; background: rgba(251, 191, 36, 0.05); border-color: var(--thumb-main); box-shadow: 0 0 15px rgba(251, 191, 36, 0.2); }
+
+    /* BACKGROUND & GRID */
+    .bg-scene { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: radial-gradient(circle at 50% 50%, transparent 20%, var(--bg-base) 80%); }
+    .bg-grid { position: absolute; width: 140%; height: 140%; top: -20%; left: -20%; background-image: linear-gradient(var(--grid-opacity) 1px, transparent 1px), linear-gradient(90deg, var(--grid-opacity) 1px, transparent 1px); background-size: 60px 60px; }
+    .plasma { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.22; }
+    #pc { width: 800px; height: 800px; background: var(--plasma-1); top: -10%; left: -5%; }
+    #pa { width: 900px; height: 900px; background: var(--plasma-2); bottom: -15%; right: -5%; }
+    .glyph { position: absolute; font-family: 'Times New Roman', serif; font-style: italic; color: var(--glyph-color); text-shadow: 0 0 40px var(--glyph-shadow); user-select: none; pointer-events: none; }
+    #matrixCanvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -2; opacity: 0; pointer-events: none; transition: opacity 0.6s ease; }
+
+    /* HUD READOUT */
+    .hud-readout { position: fixed; bottom: 24px; right: 30px; font-family: monospace; font-size: 11px; color: var(--formula-color); letter-spacing: 2px; line-height: 1.8; pointer-events: none; z-index: 50; text-transform: uppercase; text-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
+    .hud-readout div { opacity: 0; }
+
+    /* SIDEBAR & FX PANEL */
+    .sidebar { position: fixed; left: 0; top: 0; height: 100vh; width: 68px; background: var(--nav-bg); border-right: 1px solid var(--glass-border); backdrop-filter: blur(24px); display: flex; flex-direction: column; align-items: center; padding-top: 100px; z-index: 200; }
+    .sbtn { background: none; border: none; color: var(--text-muted); width: 48px; height: 48px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s; }
+    .sbtn:hover { color: var(--thumb-main); background: rgba(255, 255, 255, 0.05); transform: translateY(-2px); }
+
+    .fx-panel { position: fixed; left: 68px; top: 0; height: 100vh; width: 320px; background: var(--tech-panel-bg); border-right: 1px solid var(--glass-border); box-shadow: 20px 0 50px rgba(0, 0, 0, 0.6); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 190; padding: 30px 24px; display: flex; flex-direction: column; }
+    .fx-panel.hidden { transform: translateX(-100%); }
+    .fxhdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); padding-bottom: 16px; }
+    
+    .fxclose { 
+      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); 
+      color: var(--text-muted); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; 
+      border-radius: 8px; transition: all 0.25s; cursor: none;
+    }
+    .fxclose:hover { color: #ef4444; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); transform: scale(1.05); }
+
+    .fxlist { display: flex; flex-direction: column; gap: 12px; }
+    .fxopt { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); color: var(--text-muted); padding: 14px 18px; border-radius: 12px; font-weight: 600; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; text-align: left; display: flex; align-items: center; justify-content: space-between; transition: all 0.25s; }
+    .fxopt:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.2); color: var(--text-main); }
+    .fxopt .status-indicator { width: 8px; height: 8px; background: rgba(255, 255, 255, 0.15); border-radius: 50%; transition: all 0.3s; }
+    .fxopt.active { background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.02) 100%); color: var(--thumb-main); border-color: rgba(251, 191, 36, 0.4); }
+    .fxopt.active .status-indicator { background: var(--thumb-main); box-shadow: 0 0 10px var(--thumb-main); }
+
+    /* HIGH-VISIBILITY PANEL TERMINATE/EXIT BUTTON */
+    .fx-terminate-btn {
+      margin-top: auto; background: rgba(239, 68, 68, 0.08); border: 1px dashed rgba(239, 68, 68, 0.4);
+      color: #fca5a5; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 11px;
+      letter-spacing: 2px; text-transform: uppercase; text-align: center; transition: all 0.25s;
+    }
+    .fx-terminate-btn:hover { background: #ef4444; color: #ffffff; border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+
+    /* NAV BAR */
+    .nav-bar { position: fixed; top: 0; left: 68px; width: calc(100% - 68px); z-index: 1000; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(3, 7, 18, 0.5); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); }
+    .brand { display: flex; align-items: center; gap: 14px; font-size: 20px; font-weight: 800; letter-spacing: 1.5px; background: var(--heading-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    .brand-logo { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--thumb-main); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); background: var(--bg-gate); overflow: hidden; padding: 2px; }
+    .brand-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; animation: logoTechSpin 20s linear infinite; }
+    @keyframes logoTechSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .nav-cluster { display: flex; align-items: center; gap: 24px; }
+    .nav-links { display: flex; align-items: center; gap: 4px; background: rgba(255, 255, 255, 0.03); padding: 4px; border-radius: 100px; border: 1px solid var(--glass-border); }
+    .nav-links a { padding: 10px 22px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; border-radius: 100px; transition: all 0.25s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--text-main); background: rgba(255, 255, 255, 0.08); }
+    .theme-btn { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); transition: all 0.3s; }
+    .theme-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
+
+    /* LAYOUT */
+    .main { padding-top: 100px; padding-left: 68px; min-height: 100vh; display: grid; grid-template-columns: 1fr 1.1fr; align-items: center; max-width: 1500px; margin: 0 auto; padding-right: 50px; gap: 40px; position: relative; z-index: 10; }
+    .left-panel { display: flex; flex-direction: column; gap: 36px; padding-left: 40px; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); border-radius: 100px; padding: 6px 14px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--formula-color); margin-bottom: 20px; }
+    .hero-badge .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: livePulse 1.8s infinite; }
+    @keyframes livePulse { 0%, 100% { transform: scale(0.9); opacity: 0.6; } 50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 8px #10b981; } }
+    .hero h1 { font-size: clamp(2.2rem, 4vw, 3.8rem); font-weight: 900; background: var(--heading-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; margin-bottom: 16px; }
+    .hero p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.65; max-width: 440px; }
+    
+    .cc { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 18px; padding: 18px 24px; display: flex; align-items: center; gap: 16px; text-decoration: none; color: inherit; transition: all 0.3s; }
+    .cc:hover { border-color: rgba(14, 165, 233, 0.35); background: rgba(14, 165, 233, 0.03); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); transform: translateX(6px); }
+    .cc-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); display: flex; align-items: center; justify-content: center; color: var(--formula-color); }
+    .cc-text { display: flex; flex-direction: column; gap: 2px; }
+    .cc-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); }
+    .cc-val { font-size: 14px; font-weight: 600; }
+
+    /* ORBIT MATRIX GRID WITH ABSOLUTE CENTERING LAYOUTS */
+    .right-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+    
+    .structural-brackets { position: absolute; inset: -40px; pointer-events: none; border: 1.5px solid rgba(255,255,255,0.05); border-radius: 20px; mask-image: linear-gradient(black, black), linear-gradient(black, black); mask-position: 0 0, 0 0; mask-size: 100% 30px, 30px 100%; mask-repeat: no-repeat, no-repeat; z-index: 10; }
+    .structural-brackets::before, .structural-brackets::after { content: ''; position: absolute; inset: 0; border: 1.5px solid rgba(255,255,255,0.05); border-radius: 20px; }
+    .structural-brackets::before { clip-path: polygon(0 0, 30px 0, 0 30px); }
+    .structural-brackets::after { clip-path: polygon(100% 100%, calc(100% - 30px) 100%, 100% calc(100% - 30px)); }
+
+    .orbit-wrapper { position: relative; width: 580px; height: 580px; z-index: 20; }
+    
+    /* CONCENTRIC FIXED ALIGNMENT TIERS */
+    .orbit-track { position: absolute; border-radius: 50%; pointer-events: none; }
+    .track-1 { width: 520px; height: 520px; top: calc(50% - 260px); left: calc(50% - 260px); border: 1.5px dashed rgba(14, 165, 233, 0.25); animation: rotatingLoop 80s linear infinite; }
+    .track-2 { width: 380px; height: 380px; top: calc(50% - 190px); left: calc(50% - 190px); border: 1px solid rgba(245, 158, 11, 0.15); }
+    .track-3 { width: 260px; height: 260px; top: calc(50% - 130px); left: calc(50% - 130px); border: 1px dashed rgba(56, 189, 248, 0.2); animation: rotatingLoop 35s linear infinite reverse; }
+    @keyframes rotatingLoop { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* BALANCED FLUID GYROSCOPIC TRACKING TARGET */
+    .gyro-ring {
+      position: absolute; width: 170px; height: 170px; 
+      top: calc(50% - 85px); left: calc(50% - 85px); border-radius: 50%;
+      border: 1px dashed rgba(14, 165, 233, 0.4);
+      border-left: 3px solid var(--formula-color);
+      border-right: 3px solid var(--thumb-main);
+      z-index: 48; pointer-events: none;
+    }
+
+    .center-logo-hub { position: absolute; width: 130px; height: 130px; top: calc(50% - 65px); left: calc(50% - 65px); z-index: 50; display: flex; align-items: center; justify-content: center; }
+    .core-avatar { width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--thumb-main); background: var(--bg-gate); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 35px rgba(251, 191, 36, 0.3), inset 0 0 20px rgba(251, 191, 36, 0.15); overflow: hidden; padding: 4px; }
+    .core-avatar img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+
+    .node-element { position: absolute; width: 94px; height: 94px; z-index: 60; transform: translate(-50%, -50%); }
+    .node-inner { width: 100%; height: 100%; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), rgba(3,7,18,0.98)); border: 1.5px solid rgba(255, 255, 255, 0.1); transition: all 0.3s; box-shadow: 0 12px 28px rgba(0,0,0,0.45); }
+    .node-inner svg { width: 30px; height: 30px; transition: transform 0.3s; }
+    .node-inner span { font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.82; }
+    .node-element:hover .node-inner { transform: scale(1.15); }
+    
+    .n-tg { color: #2aabee; } .n-tg .node-inner:hover { border-color: #2aabee; box-shadow: 0 0 25px rgba(42, 171, 238, 0.4); }
+    .n-yt { color: #ff0000; } .n-yt .node-inner:hover { border-color: #ff0000; box-shadow: 0 0 25px rgba(255, 0, 0, 0.3); }
+    .n-wa { color: #25d366; } .n-wa .node-inner:hover { border-color: #25d366; box-shadow: 0 0 25px rgba(37, 211, 102, 0.3); }
+    .n-rd { color: #ff4500; } .n-rd .node-inner:hover { border-color: #ff4500; box-shadow: 0 0 25px rgba(255, 69, 0, 0.3); }
+    .n-dc { color: #5865f2; } .n-dc .node-inner:hover { border-color: #5865f2; box-shadow: 0 0 25px rgba(88, 101, 242, 0.3); }
+
+    .orbit-hint { margin-top: 30px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); opacity: 0.5; display: flex; align-items: center; gap: 10px; }
+    .orbit-hint::before, .orbit-hint::after { content: ''; width: 20px; height: 1px; background: var(--text-muted); opacity: 0.5; }
+
+    /* POPUPS & TOOLTIPS */
+    .tip { position: fixed; background: var(--tech-panel-bg); border: 1px solid var(--glass-border); border-radius: 8px; padding: 6px 14px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; pointer-events: none; z-index: 9000; opacity: 0; color: var(--text-main); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .popup-overlay { position: fixed; inset: 0; background: rgba(3, 7, 12, 0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; backdrop-filter: blur(12px); transition: opacity 0.4s; }
+    .popup-overlay.active { opacity: 1; pointer-events: all; }
+    .popup-box { background: var(--tech-panel-bg); border: 1px solid var(--glass-border); border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6); max-width: 400px; width: 90%; transform: scale(0.92) translateY(10px); transition: transform 0.4s; }
+    .popup-overlay.active .popup-box { transform: scale(1) translateY(0); }
+    .popup-icon-wrap { width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+    .popup-box h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+    .popup-box p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px; }
+    .popup-close-btn { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--glass-border); color: var(--text-main); padding: 12px 30px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; transition: all 0.25s; }
+    .popup-close-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
+
+    .badge { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 6px 14px; border-radius: 100px; font-size: 11px; font-weight: 600; color: var(--text-muted); }
+    .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--formula-color); box-shadow: 0 0 8px var(--formula-color); }
+  </style>
+</head>
+<body>
+
+<div class="scanner-line"></div>
+<div class="cur-dot" id="curDot"></div>
+<div class="cur-ring" id="curRing"></div>
+
+<div class="hud-readout">
+  <div>SYS_MATRIX // ONLINE</div>
+  <div>COORDINATE_LOCK // ENGAGED</div>
+  <div id="audioStatus">SYS_AUDIO // ACTIVE</div>
+</div>
+
+<div class="bg-scene">
+  <div class="bg-grid" id="bgGrid"></div>
+  <div class="plasma" id="pc"></div>
+  <div class="plasma" id="pa"></div>
+  <div class="glyph" style="font-size: 24vw; top: -5%; left: 5%;">∮</div>
+  <div class="glyph" style="font-size: 18vw; bottom: 8%; right: 6%;">Ω</div>
+  <div class="glyph" style="font-size: 14vw; top: 35%; left: 45%;">λ</div>
+</div>
+<canvas id="matrixCanvas"></canvas>
+
+<div class="sidebar">
+  <button class="sbtn interactive-target" id="toggleFX" title="Visual Settings Matrix">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span style="margin-top: 5px;">FX</span>
+  </button>
+</div>
+
+<div class="fx-panel hidden" id="fxPanel">
+  <div class="fxhdr">
+    <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-main);">Visual Engines</h3>
+    <button class="fxclose interactive-target" id="closeFX" title="Close Panel">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>
+  <div class="fxlist">
+    <button class="fxopt interactive-target active" id="fxGrid"><span class="status-indicator"></span>Vector Grid</button>
+    <button class="fxopt interactive-target active" id="fxGlyph"><span class="status-indicator"></span>Macro Glyphs</button>
+    <button class="fxopt interactive-target active" id="fxMatrix"><span class="status-indicator"></span>Matrix Rain</button>
+    <button class="fxopt interactive-target active" id="fxAudio"><span class="status-indicator"></span>Synth Audio</button>
+  </div>
+  
+  <button class="fx-terminate-btn interactive-target" id="closeFXAlternative">
+    Terminate Panel
+  </button>
+</div>
+
+<header class="nav-bar" id="navBar">
+  <div class="brand">
+    <div class="brand-logo interactive-target">
+      <img src="logo.png" alt="Math Vanguard Logo" onerror="this.style.display='none'; this.parentElement.innerText='MV';">
+    </div>
+    Math Vanguard
+  </div>
+  <div class="nav-cluster">
+    <nav class="nav-links">
+      <a href="mathvanguard.html" class="interactive-target">Home</a>
+      <a href="handouts.html" class="interactive-target">Handouts</a>
+      <a href="lectures.html" class="interactive-target">Lectures</a>
+      <a href="problemsets.html" class="interactive-target">Problem Sets</a>
+      <a href="contacts.html" class="active interactive-target">Contact</a>
+    </nav>
+    <button class="theme-btn interactive-target" id="themeBtn" title="Shift Grid Color Spectrum">
+      <svg id="themeIco" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+  <div class="badge">
+    <div class="dot"></div>
+    <span>Ayush Behera</span>
+  </div>
+</header>
+
+<div class="tip" id="tip"></div>
+
+<main class="main">
+  <div class="left-panel">
+    <div class="hero" id="heroText">
+      <div class="hero-badge">
+        <div class="live-dot"></div>
+        <span>Secure Relay Hub</span>
+      </div>
+      <h1>Connect With The Vanguard</h1>
+      <p>Initiate direct lines of telemetry with our mathematical core. Choose a verified transmission coordinate or explore the alternative nodal channels.</p>
+    </div>
+
+    <div class="contact-strip" id="contactLinks">
+      <a href="https://t.me/Prepmathvanguard" target="_blank" class="cc interactive-target">
+        <div class="cc-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </div>
+        <div class="cc-text">
+          <span class="cc-label">Primary Telegram Coordinate</span>
+          <span class="cc-val">@Prepmathvanguard</span>
+        </div>
+      </a>
+      <a href="mailto:support@mathvanguard.com" class="cc interactive-target">
+        <div class="cc-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="cc-text">
+          <span class="cc-label">Official Secure Email</span>
+          <span class="cc-val">support@mathvanguard.com</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="right-panel" id="orbitPanel">
+    <div class="structural-brackets"></div>
+
+    <div class="orbit-wrapper">
+      <div class="orbit-track track-1"></div>
+      <div class="orbit-track track-2"></div>
+      <div class="orbit-track track-3"></div>
+
+      <svg id="laserTrack" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 45;">
+        <line id="laserLine" x1="50%" y1="50%" x2="50%" y2="50%" stroke="rgba(251, 191, 36, 0)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <circle id="laserTargetCircle" cx="50%" cy="50%" r="0" fill="none" stroke="rgba(251, 191, 36, 0)" stroke-width="1"/>
+      </svg>
+
+      <div class="gyro-ring" id="gyroRing"></div>
+
+      <div class="center-logo-hub">
+        <div class="core-avatar">
+          <img src="logo.png" alt="Math Vanguard Logo" onerror="this.style.display='none'; this.parentElement.innerText='MV';">
+        </div>
+      </div>
+
+      <div class="node-element interactive-target n-tg" data-label="Telegram Channel" data-link="https://t.me/Prepmathvanguard">
+        <div class="node-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
+          <span>Telegram</span>
+        </div>
+      </div>
+      <div class="node-element interactive-target n-yt" data-label="YouTube Core" data-link="https://www.youtube.com/channel/UCeyaZb4xWu378eSZ7eXT74A">
+        <div class="node-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+          <span>YouTube</span>
+        </div>
+      </div>
+      <div class="node-element interactive-target n-wa" data-label="WhatsApp Network" data-popup="pWA">
+        <div class="node-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <span>WhatsApp</span>
+        </div>
+      </div>
+      <div class="node-element interactive-target n-rd" data-label="Reddit Forum" data-popup="pRD">
+        <div class="node-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8V6m0 2a3 3 0 1 0 0 6 3 3 0 1 0 0-6zm-4 3h8"/></svg>
+          <span>Reddit</span>
+        </div>
+      </div>
+      <div class="node-element interactive-target n-dc" data-label="Discord Portal" data-popup="pDC">
+        <div class="node-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span>Discord</span>
+        </div>
+      </div>
+    </div>
+    <div class="orbit-hint">Interactive Quantum Array</div>
+  </div>
+</main>
+
+<div class="popup-overlay" id="pWA">
+  <div class="popup-box">
+    <div class="popup-icon-wrap" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);color:var(--thumb-main);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <h3>WhatsApp Telemetry Link</h3>
+    <div class="soon-badge" style="display:inline-block; margin-bottom: 12px; font-size: 10px; padding: 4px 10px; border-radius: 4px; background: rgba(245,158,11,0.15); color: var(--thumb-main); font-weight:700;">🚧 UNDER CONSTRUCTION</div>
+    <p>This automated notification system and secure chat matrix portal are currently being compiled within our grid environment.</p>
+    <button class="popup-close-btn interactive-target" onclick="closePopup('pWA')">Close Interface</button>
+  </div>
+</div>
+
+<div class="popup-overlay" id="pRD">
+  <div class="popup-box">
+    <div class="popup-icon-wrap" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);color:var(--thumb-main);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <h3>Subreddit Infrastructure</h3>
+    <div class="soon-badge" style="display:inline-block; margin-bottom: 12px; font-size: 10px; padding: 4px 10px; border-radius: 4px; background: rgba(245,158,11,0.15); color: var(--thumb-main); font-weight:700;">🚧 UNDER CONSTRUCTION</div>
+    <p>A structured community repository for hosting global public peer coordination arrays and mathematical breakdowns is currently loading.</p>
+    <button class="popup-close-btn interactive-target" onclick="closePopup('pRD')">Close Interface</button>
+  </div>
+</div>
+
+<div class="popup-overlay" id="pDC">
+  <div class="popup-box">
+    <div class="popup-icon-wrap" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);color:var(--thumb-main);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <h3>Discord Mainframe</h3>
+    <div class="soon-badge" style="display:inline-block; margin-bottom: 12px; font-size: 10px; padding: 4px 10px; border-radius: 4px; background: rgba(245,158,11,0.15); color: var(--thumb-main); font-weight:700;">🚧 UNDER CONSTRUCTION</div>
+    <p>Voice relays, partition modules, and real-time query logging channels are undergoing final initialization sequences.</p>
+    <button class="popup-close-btn interactive-target" onclick="closePopup('pDC')">Close Interface</button>
+  </div>
+</div>
+
+<script>
+  // AUDIO CONTROLLER Matrix
+  const AudioEngine = {
+    ctx: null, enabled: true,
+    init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+    playTone(freq, type, duration, vol) {
+      if (!this.enabled) return; this.init();
+      try { const osc = this.ctx.createOscillator(); const gainNode = this.ctx.createGain(); osc.type = type; osc.frequency.value = freq; gainNode.gain.setValueAtTime(vol, this.ctx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration); osc.connect(gainNode); gainNode.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + duration); } catch(e) {}
+    }
+  };
+
+  // KINETIC CURSOR TRACKING ENGINE
+  const curDot = document.getElementById('curDot'); const curRing = document.getElementById('curRing'); const gyroRing = document.getElementById('gyroRing');
+  
+  window.addEventListener('mousemove', e => {
+    const mx = (e.clientX / window.innerWidth - 0.5); const my = (e.clientY / window.innerHeight - 0.5);
+    
+    gsap.to(curDot, { x: e.clientX, y: e.clientY, duration: 0 });
+    gsap.to(curRing, { x: e.clientX, y: e.clientY, duration: 0.08, ease: 'power1.out' });
+    
+    // Fluid gyroscopic sway vectors
+    gsap.to(gyroRing, { rotation: mx * 180, x: mx * 20, y: my * 20, duration: 0.8, ease: 'power2.out' });
+  });
+
+  // MECHANICAL HOVER TRANSLATIONS
+  document.querySelectorAll('.interactive-target, a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => { 
+      document.body.classList.add('hov'); 
+      AudioEngine.playTone(550, 'triangle', 0.1, 0.04);
+      
+      if (el.id === 'toggleFX') {
+        gsap.to(el.querySelector('svg'), { rotation: 90, duration: 0.4, ease: 'power2.out' });
+      } else if (el.id === 'themeBtn') {
+        gsap.to(el.querySelector('svg'), { rotation: 180, scale: 1.1, duration: 0.4, ease: 'back.out(1.5)' });
+      } else if (el.id === 'closeFX' || el.id === 'closeFXAlternative') {
+        gsap.to(document.getElementById('closeFX').querySelector('svg'), { rotation: -90, scale: 0.9, duration: 0.3, ease: 'power2.out' });
+      }
+    });
+    
+    el.addEventListener('mouseleave', () => {
+      document.body.classList.remove('hov');
+      
+      if (el.id === 'toggleFX') {
+        gsap.to(el.querySelector('svg'), { rotation: 0, duration: 0.4, ease: 'power2.out' });
+      } else if (el.id === 'themeBtn') {
+        gsap.to(el.querySelector('svg'), { rotation: 0, scale: 1, duration: 0.4, ease: 'power2.out' });
+      } else if (el.id === 'closeFX' || el.id === 'closeFXAlternative') {
+        gsap.to(document.getElementById('closeFX').querySelector('svg'), { rotation: 0, scale: 1, duration: 0.3, ease: 'power2.out' });
+      }
+    });
+
+    el.addEventListener('click', () => {
+      AudioEngine.playTone(880, 'sine', 0.15, 0.06);
+      document.body.classList.add('glitch-active');
+      setTimeout(() => document.body.classList.remove('glitch-active'), 350);
+    });
+  });
+
+  // RADIAL POSITION CALCULATION
+  const nodes = document.querySelectorAll('.node-element'); const radius = 255; let systemAngleOffset = 0; let activeHoveredNode = null;
+  function arrangeNodes() {
+    nodes.forEach((node, idx) => {
+      const angle = ((idx / nodes.length) * Math.PI * 2) + systemAngleOffset;
+      node.style.left = `${50 + ((Math.cos(angle) * radius) / 580) * 100}%`; node.style.top = `${50 + ((Math.sin(angle) * radius) / 580) * 100}%`;
+    });
+  }
+  
+  const laserLine = document.getElementById('laserLine'); const laserTargetCircle = document.getElementById('laserTargetCircle');
+  function updateOrbitLoop() {
+    systemAngleOffset += 0.0012; arrangeNodes();
+    if (activeHoveredNode) { laserLine.setAttribute('x2', activeHoveredNode.style.left); laserLine.setAttribute('y2', activeHoveredNode.style.top); laserTargetCircle.setAttribute('cx', activeHoveredNode.style.left); laserTargetCircle.setAttribute('cy', activeHoveredNode.style.top); }
+    requestAnimationFrame(updateOrbitLoop);
+  }
+  requestAnimationFrame(updateOrbitLoop);
+
+  nodes.forEach(node => {
+    node.addEventListener('click', () => {
+      const targetLink = node.getAttribute('data-link'); const targetPopup = node.getAttribute('data-popup');
+      if (targetLink) window.open(targetLink, '_blank'); else if (targetPopup) document.getElementById(targetPopup).classList.add('active');
+    });
+    node.addEventListener('mouseenter', e => {
+      activeHoveredNode = node; const brandColor = window.getComputedStyle(node).color;
+      gsap.to(laserLine, { attr: { stroke: brandColor }, duration: 0.2 }); gsap.to(laserTargetCircle, { attr: { stroke: brandColor, r: 52 }, duration: 0.3, ease: 'back.out(1.5)' });
+      document.getElementById('tip').innerText = node.getAttribute('data-label'); document.getElementById('tip').style.opacity = 1;
+    });
+    node.addEventListener('mousemove', e => { document.getElementById('tip').style.left = (e.clientX + 15) + 'px'; document.getElementById('tip').style.top = (e.clientY + 15) + 'px'; });
+    node.addEventListener('mouseleave', () => { activeHoveredNode = null; gsap.to(laserLine, { attr: { stroke: 'rgba(251, 191, 36, 0)' }, duration: 0.2 }); gsap.to(laserTargetCircle, { attr: { r: 0 }, duration: 0.2 }); document.getElementById('tip').style.opacity = 0; });
+  });
+
+  function closePopup(id) { document.getElementById(id).classList.remove('active'); }
+
+  // FX INTERFACE COMMAND TRIGGERS
+  document.getElementById('toggleFX').addEventListener('click', () => document.getElementById('fxPanel').classList.remove('hidden'));
+  
+  const hideFXPanel = () => document.getElementById('fxPanel').classList.add('hidden');
+  document.getElementById('closeFX').addEventListener('click', hideFXPanel);
+  document.getElementById('closeFXAlternative').addEventListener('click', hideFXPanel);
+
+  document.querySelectorAll('.fxopt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      opt.classList.toggle('active'); const isAct = opt.classList.contains('active');
+      if (opt.id === 'fxAudio') {
+        AudioEngine.enabled = isAct;
+        document.getElementById('audioStatus').innerText = isAct ? "SYS_AUDIO // ACTIVE" : "SYS_AUDIO // MUTED";
+      }
+      if (opt.id === 'fxGlyph') gsap.to('.glyph', { opacity: isAct ? 1 : 0, duration: 0.4 });
+      if (opt.id === 'fxGrid') gsap.to('#bgGrid', { opacity: isAct ? 1 : 0, duration: 0.4 });
+      if (opt.id === 'fxMatrix') document.getElementById('matrixCanvas').style.opacity = isAct ? '0.35' : '0';
+    });
+  });
+
+  // DIGITAL MATRIX RAIN
+  const canvas = document.getElementById('matrixCanvas'); const ctx = canvas.getContext('2d'); let columns = []; const chars = ['∑', '∫', '∬', '∭', '∮', '∏', '∐', '∇', '∆', 'Ω', 'λ', 'φ', 'ψ', 'ζ', 'θ', 'μ', 'σ'];
+  function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; columns = Array(Math.floor(canvas.width / 24)).fill(0).map(() => Math.random() * -100); }
+  resizeCanvas(); window.addEventListener('resize', resizeCanvas); canvas.style.opacity = '0.35';
+  function drawMatrix() {
+    if (document.getElementById('fxMatrix').classList.contains('active')) {
+      ctx.fillStyle = 'rgba(3, 7, 18, 0.08)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.font = '300 15px Times New Roman'; ctx.fillStyle = (document.documentElement.getAttribute('data-theme') === 'light') ? 'rgba(254, 240, 138, 0.45)' : 'rgba(56, 189, 248, 0.35)';
+      columns.forEach((y, x) => { ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x * 24, y); columns[x] = (y > canvas.height && Math.random() > 0.985) ? 0 : y + 16; });
+    } requestAnimationFrame(drawMatrix);
+  } requestAnimationFrame(drawMatrix);
+
+  // BACKGROUND PARALLAX SENSORS
+  window.addEventListener('mousemove', e => {
+    if (document.getElementById('fxGrid').classList.contains('active')) {
+      const mx = (e.clientX / window.innerWidth - 0.5); const my = (e.clientY / window.innerHeight - 0.5);
+      gsap.to('#bgGrid', { x: mx * 25, y: my * 25, duration: 1.2, ease: 'power1.out' }); gsap.to('#pc', { x: mx * 45, y: my * 45, duration: 2, ease: 'power2.out' }); gsap.to('#pa', { x: mx * -45, y: my * -45, duration: 2, ease: 'power2.out' });
+    }
+  });
+
+  // GRID COGNITIVE SPECTRUM SHIFT
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const targetTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', targetTheme);
+    document.getElementById('themeIco').innerHTML = targetTheme === 'light' ? '<path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="currentColor"/>' : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="none" stroke="currentColor" stroke-width="2"/>';
+  });
+
+  // SECURE INITIALIZATION SEQUENCE
+  window.addEventListener('DOMContentLoaded', () => {
+    gsap.from('#navBar', { y: -30, opacity: 0, duration: 0.8, ease: 'power3.out' });
+    gsap.from('#heroText h1, #heroText p, .hero-badge', { y: 25, opacity: 0, duration: 0.8, ease: 'power3.out', delay: 0.2 });
+    gsap.from('.cc', { x: -30, opacity: 0, duration: 0.6, stagger: 0.12, ease: 'power2.out', delay: 0.4 });
+    gsap.from('#orbitPanel, .orbit-wrapper', { scale: 0.94, opacity: 0, duration: 1.2, ease: 'power2.out', delay: 0.3 });
+    
+    document.querySelectorAll('.hud-readout div').forEach((el, index) => {
+      const originalText = el.innerText; el.innerText = ''; el.style.opacity = 1;
+      setTimeout(() => {
+        let charIndex = 0; AudioEngine.playTone(300 + (index * 100), 'square', 0.05, 0.02);
+        const typeInterval = setInterval(() => { el.innerText += originalText[charIndex]; charIndex++; if (charIndex >= originalText.length) clearInterval(typeInterval); }, 40);
+      }, 1000 + (index * 600));
+    });
+  });
+</script>
+</body>
+</html>

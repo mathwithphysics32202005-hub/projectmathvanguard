@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Vanguard - Lecture Matrix</title>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCJN5QvKnbLgrTjlRbpoH9XtfYC0cTxgbk",
+      authDomain: "math-vanguard.firebaseapp.com",
+      projectId: "math-vanguard",
+      storageBucket: "math-vanguard.firebasestorage.app",
+      messagingSenderId: "238450183127",
+      appId: "1:238450183127:web:8a0ae2eaede4767c10d992"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window._fbDb = db;
+    window._fbCollection = collection;
+    window._fbGetDocs = getDocs;
+    window._fbAddDoc = addDoc;
+    window._fbDeleteDoc = deleteDoc;
+    window._fbDoc = doc;
+    window._fbUpdateDoc = updateDoc;
+    window.dispatchEvent(new Event('firebase-ready'));
+  </script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+  <style>
+    :root {
+      --transition-speed: 0.6s;
+      --bg-base: #020617;
+      --bg-gate: #0f172a;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --glass-bg: rgba(15, 23, 42, 0.45);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-glow: rgba(56, 189, 248, 0.25);
+      --nav-bg: rgba(2, 6, 23, 0.7);
+      --grid-opacity: rgba(56, 189, 248, 0.04);
+      --plasma-1: #38bdf8;
+      --plasma-2: #818cf8;
+      --heading-gradient: linear-gradient(135deg, #ffffff 20%, #38bdf8 60%, #818cf8 100%);
+      --formula-color: #38bdf8;
+      --btn-glow: rgba(56, 189, 248, 0.4);
+      --accent-gold: #38bdf8;
+      --fx-bg: rgba(5, 10, 20, 0.95);
+      --fx-panel-border: rgba(255, 255, 255, 0.1);
+      --fx-active: #fbbf24;
+      --fx-active-bg: #fbbf24;
+      --fx-active-text: #111827;
+      --fx-inactive-bg: rgba(15, 23, 42, 0.6);
+      --fx-inactive-text: #94a3b8;
+    }
+
+    [data-theme="light"] {
+      --bg-base: #2a0808; --bg-gate: #4c1d15; --text-main: #fff5f5; --text-muted: #fca5a5; 
+      --glass-bg: rgba(255, 255, 255, 0.08); --glass-border: rgba(255, 255, 255, 0.15); 
+      --glass-glow: rgba(248, 113, 113, 0.2); --nav-bg: rgba(76, 29, 21, 0.7);
+      --grid-opacity: rgba(248, 113, 113, 0.05); --plasma-1: #dc2626; --plasma-2: #f97316; 
+      --heading-gradient: linear-gradient(135deg, #ffffff 20%, #f87171 60%, #f97316 100%); 
+      --formula-color: #fca5a5; --btn-glow: rgba(248, 113, 113, 0.4); --accent-gold: #f87171;
+    }
+
+    body.bloom-active .glass-category-panel, body.bloom-active .document-card, body.bloom-active .nav-matrix {
+      box-shadow: 0 0 30px var(--glass-glow), inset 0 0 15px rgba(255,255,255,0.05);
+    }
+    body.bloom-active .brand-identity, body.bloom-active .matrix-title-block h1 {
+      text-shadow: 0 0 20px var(--accent-gold);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+    /* === PREMIUM CYBERPUNK CURSOR ENGINE === */
+    body, a, button, input, select, .file-drop-area, .video-thumbnail-placeholder, .progress-area, iframe {
+      cursor: none !important;
+    }
+    .custom-cursor-ring {
+      position: fixed; top: 0; left: 0; width: 34px; height: 34px; border: 2px solid var(--accent-gold); border-radius: 50%;
+      pointer-events: none; z-index: 2147483647;
+      transition: width 0.25s cubic-bezier(0.25, 1, 0.5, 1), height 0.25s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.25s ease, background-color 0.25s ease, opacity 0.15s ease;
+      opacity: 1;
+    }
+    .custom-cursor-dot {
+      position: fixed; top: 0; left: 0; width: 6px; height: 6px; background-color: var(--plasma-1); border-radius: 50%;
+      pointer-events: none; z-index: 2147483647; transition: opacity 0.1s ease; opacity: 1;
+    }
+    body.link-hovered .custom-cursor-ring { width: 52px; height: 52px; border-color: var(--plasma-1); background-color: rgba(56, 189, 248, 0.08); }
+    
+    /* FIX FOR 2 CURSORS: Hide custom cursor when interacting with YouTube Native Controls */
+    body.cursor-hidden .custom-cursor-ring, body.cursor-hidden .custom-cursor-dot { opacity: 0 !important; }
+
+    body { background-color: var(--bg-base); color: var(--text-main); overflow-x: hidden; min-height: 100vh; transition: background-color var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1), color var(--transition-speed) ease; }
+
+    /* === 3D CYBERPUNK HUD LOADER === */
+    #tech-loader-overlay { position: fixed; inset: 0; background-color: #050508; background-image: radial-gradient(circle at center, rgba(0, 229, 255, 0.03) 0%, transparent 60%); z-index: 999990; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 80px; font-family: monospace; overflow: hidden; }
+    .hud-container { perspective: 1200px; }
+    .hud-3d { position: relative; width: 300px; height: 300px; transform-style: preserve-3d; transform: rotateX(65deg) rotateZ(-20deg); animation: float-complex 6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+    .ring { position: absolute; top: 50%; left: 50%; border-radius: 50%; transform-origin: center center; transform-style: preserve-3d; }
+    .ring-outer { width: 280px; height: 280px; border: 2px solid rgba(0, 229, 255, 0.1); border-top: 5px dashed #00e5ff; border-bottom: 5px dashed #00e5ff; box-shadow: 0 0 30px rgba(0, 229, 255, 0.5), inset 0 0 20px rgba(0, 229, 255, 0.3); animation: spin-outer 8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite, neon-flicker 4s infinite; }
+    .ring-track { width: 230px; height: 230px; border: 1px solid rgba(255, 255, 255, 0.05); animation: spin-linear 3s linear infinite; transform: translate(-50%, -50%) translateZ(25px); }
+    .ring-track::before { content: ''; position: absolute; top: -5px; left: 50%; width: 12px; height: 12px; background: #00e5ff; border-radius: 50%; box-shadow: 0 0 25px 8px rgba(0, 229, 255, 0.8); }
+    .ring-mid { width: 170px; height: 170px; border: 6px solid transparent; border-left: 6px solid #ffea00; border-right: 6px solid #ffea00; box-shadow: 0 0 30px rgba(255, 234, 0, 0.6), inset 0 0 30px rgba(255, 234, 0, 0.6); animation: spin-mid-complex 6s ease-in-out infinite; }
+    .ring-inner { width: 100px; height: 100px; border: 3px double #00e5ff; border-top: 3px solid transparent; border-bottom: 3px solid transparent; animation: spin-inner-fast 2.5s linear infinite; }
+    .ring-inner-2 { width: 70px; height: 70px; border: 2px dashed #ffea00; opacity: 0.7; animation: spin-inner-fast 4s linear infinite reverse; }
+    .ring-core { width: 25px; height: 25px; background: #ffea00; border: 2px solid #ffffff; animation: core-surge 2s cubic-bezier(0.25, 1, 0.5, 1) infinite; }
+
+    @keyframes spin-outer { 0% { transform: translate(-50%, -50%) translateZ(0px) rotate(0deg) scale(1); } 50% { transform: translate(-50%, -50%) translateZ(15px) rotate(220deg) scale(1.05); border-color: rgba(0, 229, 255, 0.8); } 100% { transform: translate(-50%, -50%) translateZ(0px) rotate(360deg) scale(1); } }
+    @keyframes spin-linear { 100% { transform: translate(-50%, -50%) translateZ(25px) rotate(360deg); } }
+    @keyframes spin-mid-complex { 0% { transform: translate(-50%, -50%) translateZ(40px) rotate(0deg) scale(1); } 25% { transform: translate(-50%, -50%) translateZ(90px) rotate(-180deg) scale(0.9); } 50% { transform: translate(-50%, -50%) translateZ(30px) rotate(-180deg) scale(1.15); box-shadow: 0 0 60px rgba(255, 234, 0, 0.9); } 75% { transform: translate(-50%, -50%) translateZ(80px) rotate(-360deg) scale(0.85); } 100% { transform: translate(-50%, -50%) translateZ(40px) rotate(-360deg) scale(1); } }
+    @keyframes spin-inner-fast { 0% { transform: translate(-50%, -50%) translateZ(110px) rotate(0deg); } 50% { transform: translate(-50%, -50%) translateZ(140px) rotate(180deg); } 100% { transform: translate(-50%, -50%) translateZ(110px) rotate(360deg); } }
+    @keyframes core-surge { 0% { transform: translate(-50%, -50%) translateZ(150px) scale(0.8); box-shadow: 0 0 10px #ffea00; opacity: 0.8; } 15% { transform: translate(-50%, -50%) translateZ(190px) scale(1.8); box-shadow: 0 0 80px #ffea00, 0 0 30px #ffffff; opacity: 1; background: #ffffff; } 35% { transform: translate(-50%, -50%) translateZ(140px) scale(0.9); box-shadow: 0 0 20px #ffea00; opacity: 0.9; background: #ffea00; } 55% { transform: translate(-50%, -50%) translateZ(170px) scale(1.3); box-shadow: 0 0 50px #ffea00; opacity: 1; } 100% { transform: translate(-50%, -50%) translateZ(150px) scale(0.8); box-shadow: 0 0 10px #ffea00; opacity: 0.8; } }
+    @keyframes float-complex { 0% { transform: rotateX(65deg) rotateZ(-20deg) translateY(0px) translateX(0px); } 33% { transform: rotateX(74deg) rotateZ(-12deg) translateY(-30px) translateX(15px); } 66% { transform: rotateX(56deg) rotateZ(-28deg) translateY(15px) translateX(-15px); } 100% { transform: rotateX(65deg) rotateZ(-20deg) translateY(0px) translateX(0px); } }
+    @keyframes neon-flicker { 0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; filter: brightness(1); } 19%, 20%, 23%, 24%, 54%, 55%, 56% { opacity: 0.3; filter: brightness(0.5); box-shadow: none; } }
+
+    .loader-interface { height: 40px; display: flex; justify-content: center; align-items: center; position: relative; z-index: 2; }
+    .tech-btn { background: rgba(0, 229, 255, 0.05); border: 1px solid #00e5ff; color: #00e5ff; padding: 14px 34px; font-size: 1.1rem; font-weight: bold; letter-spacing: 4px; text-transform: uppercase; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 15px rgba(0, 229, 255, 0.15) inset; outline: none; position: relative; overflow: hidden; }
+    .tech-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.4), transparent); transition: 0.5s; }
+    .tech-btn:hover::before { left: 100%; }
+    .tech-btn:hover { background: rgba(0, 229, 255, 0.15); box-shadow: 0 0 25px rgba(0, 229, 255, 0.5) inset, 0 0 25px rgba(0, 229, 255, 0.5); text-shadow: 0 0 10px #ffffff; transform: scale(1.05); border-color: #ffffff; }
+    .tech-status { color: #ffea00; font-size: 1.2rem; font-weight: bold; letter-spacing: 3px; text-shadow: 0 0 15px rgba(255, 234, 0, 0.8); }
+    .hidden { display: none !important; }
+
+    /* === BACKGROUND ENGINES === */
+    .viewport-fixed-scenery { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -10; overflow: hidden; pointer-events: none; }
+    .hero-canvas-scenery { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    .fx-canvas-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.8s; }
+    .parallax-layer-grid { position: absolute; width: 200%; height: 200%; top: -50%; left: -50%; background-image: linear-gradient(var(--grid-opacity) 1px, transparent 1px), linear-gradient(90deg, var(--grid-opacity) 1px, transparent 1px); background-size: 80px 80px; transform: rotateX(20deg); transform-origin: center top; transition: opacity 0.5s; pointer-events: none; }
+    body.grid-disabled .parallax-layer-grid { opacity: 0; }
+    .plasma-node { position: absolute; border-radius: 50%; filter: blur(180px); opacity: 0.35; will-change: transform; pointer-events: none; }
+    #plasma-cyan { width: 800px; height: 800px; background: var(--plasma-1); top: -20%; left: -10%; }
+    #plasma-amber { width: 900px; height: 900px; background: var(--plasma-2); bottom: -25%; right: -10%; }
+    .math-drift-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none !important; z-index: -5; overflow: hidden; }
+    .floating-math-symbol { position: absolute; color: var(--formula-color); font-weight: bold; opacity: 0; will-change: transform, opacity; text-shadow: 0 0 15px var(--formula-color); pointer-events: none !important; }
+
+    /* === HEADER & NAVIGATION === */
+    .vanguard-header { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; padding: 20px 60px; display: flex; justify-content: space-between; align-items: center; background: rgba(2, 6, 23, 0.2); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-bottom: 1px solid var(--glass-border); opacity: 1; transform: translateY(0); }
+    .brand-identity { display: flex; align-items: center; gap: 14px; font-size: 24px; font-weight: 900; letter-spacing: 2.5px; background: var(--heading-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; }
+    .nav-center-cluster { display: flex; align-items: center; gap: 20px; }
+    .nav-matrix { display: flex; align-items: center; gap: 6px; background: var(--nav-bg); padding: 6px; border-radius: 40px; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+    .nav-matrix-item { padding: 12px 26px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; border-radius: 30px; transition: all 0.4s; }
+    .nav-matrix-item:hover, .nav-matrix-item.active { color: var(--text-main); background: rgba(255, 255, 255, 0.06); box-shadow: 0 4px 12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.05); }
+    .theme-toggle-control { background: var(--nav-bg); border: 1px solid var(--glass-border); width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); transition: border-color 0.3s; }
+    .theme-toggle-control:hover { border-color: var(--accent-gold); }
+
+    /* === FX TRIGGER & PANEL === */
+    .fx-trigger { position: fixed !important; left: 40px !important; bottom: 40px !important; background: rgba(5, 10, 20, 0.85); border: 1px solid var(--fx-active); padding: 14px 26px; border-radius: 50px; z-index: 99990 !important; opacity: 1 !important; display: flex; flex-direction: row; align-items: center; gap: 12px; backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(251, 191, 36, 0.4) !important; transition: transform 0.3s, background 0.3s; }
+    .fx-trigger svg { color: var(--fx-active); }
+    .fx-trigger span { font-size: 13px; font-weight: 900; letter-spacing: 3px; color: var(--fx-active); }
+    .fx-trigger:hover { background: rgba(15, 23, 42, 0.95); transform: translateY(-5px); }
+    .fx-panel-container { position: fixed; top: 0; left: 0; height: 100vh; width: 320px; background: var(--fx-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-right: 1px solid var(--fx-panel-border); z-index: 99995; transform: translateX(-100%); display: flex; flex-direction: column; box-shadow: 20px 0 50px rgba(0,0,0,0.7); }
+    .fx-header { display: flex; justify-content: space-between; align-items: center; padding: 30px; border-bottom: 1px solid var(--fx-panel-border); }
+    .fx-header h3 { font-size: 13px; font-weight: 900; letter-spacing: 3px; color: #fff; text-transform: uppercase; }
+    .fx-close-btn { background: none; border: none; color: #94a3b8; font-size: 24px; transition: color 0.3s; }
+    .fx-close-btn:hover { color: #fff; }
+    .fx-body { padding: 30px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+    .fx-toggle { display: flex; align-items: center; width: 100%; padding: 16px 20px; border-radius: 12px; border: 1px solid var(--fx-panel-border); background: var(--fx-inactive-bg); color: var(--fx-inactive-text); font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; transition: all 0.3s; position: relative; overflow: hidden; }
+    .fx-indicator { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); margin-right: 14px; transition: all 0.3s; }
+    .fx-toggle.active { background: var(--fx-active-bg); color: var(--fx-active-text); border-color: var(--fx-active); box-shadow: 0 0 20px rgba(251, 191, 36, 0.2); }
+    .fx-toggle.active .fx-indicator { background: var(--fx-active-text); box-shadow: 0 0 8px rgba(0,0,0,0.5); }
+
+    /* === LAYOUT CONTAINMENT === */
+    .main-layout-container { margin-top: 130px; padding: 40px 60px 40px 100px; display: grid; grid-template-columns: 340px 1fr; gap: 50px; min-height: calc(100vh - 130px); position: relative; z-index: 10; }
+    .control-sidebar-rack { display: flex; flex-direction: column; gap: 30px; opacity: 1; transform: translateX(0); position: relative; z-index: 20; }
+    .glass-category-panel { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 24px; padding: 28px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.2); transition: box-shadow 0.4s; position: relative; z-index: 25; }
+    .panel-title { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--accent-gold); font-weight: 900; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; text-shadow: 0 0 10px var(--glass-glow); }
+    .category-navigation-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .category-btn { width: 100%; padding: 16px 22px; background: transparent; border: 1px solid transparent; border-radius: 16px; color: var(--text-muted); font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 16px; transition: all 0.3s; text-align: left; position: relative; overflow: hidden; }
+    .category-btn .symbol { font-size: 18px; color: var(--formula-color); width: 24px; display: inline-block; transition: transform 0.3s; }
+    .category-btn:hover .symbol { transform: scale(1.2) rotate(5deg); }
+    .category-btn:hover, .category-btn.active { color: var(--text-main); background: rgba(255, 255, 255, 0.04); border-color: rgba(255,255,255,0.05); }
+    .category-btn.active { background: rgba(56, 189, 248, 0.06); border-color: rgba(56, 189, 248, 0.2); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+    
+    .admin-vault-gate { background: rgba(0, 0, 0, 0.3); border: 1px dashed var(--glass-border); border-radius: 20px; padding: 24px; transition: all 0.5s; position: relative; z-index: 30; }
+    .admin-vault-gate.logged-in { border-style: solid; background: rgba(15, 23, 42, 0.6); border-color: var(--accent-gold); box-shadow: 0 0 25px var(--glass-glow); }
+    .input-field { width: 100%; padding: 14px 18px; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-main); font-size: 13px; margin-bottom: 14px; outline: none; transition: all 0.3s; }
+    .input-field:focus { border-color: var(--accent-gold); background: rgba(0, 0, 0, 0.6); box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); }
+    .action-btn-primary { width: 100%; padding: 16px; background: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%); color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; border: none; border-radius: 14px; box-shadow: 0 10px 25px var(--btn-glow); transition: all 0.3s; position: relative; }
+    [data-theme="light"] .action-btn-primary { background: linear-gradient(135deg, #f87171 0%, #991b1b 100%); color: #ffffff; }
+    .action-btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 30px var(--btn-glow); }
+    
+    .document-display-matrix { display: flex; flex-direction: column; gap: 30px; opacity: 1; transform: translateX(0); position: relative; z-index: 20; }
+    .matrix-title-block h1 { font-size: 44px; font-weight: 900; letter-spacing: -1.5px; background: var(--heading-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .matrix-title-block p { color: var(--text-muted); font-size: 15px; margin-top: 8px; line-height: 1.6; }
+    .document-rack { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 30px; }
+    
+    .document-card {
+      background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 24px; padding: 32px;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; flex-direction: column;
+      justify-content: space-between; transform-style: preserve-3d; box-shadow: 0 15px 35px rgba(0,0,0,0.15); transition: border-color 0.4s, box-shadow 0.4s, background 0.4s; position: relative; z-index: 25;
+      opacity: 1; transform: scale(1);
+    }
+    .document-card:hover { border-color: rgba(56, 189, 248, 0.3); box-shadow: 0 30px 60px rgba(0,0,0,0.3), 0 0 40px var(--glass-glow) !important; background: rgba(15, 23, 42, 0.6); }
+    
+    .video-thumbnail-placeholder {
+      width: 100%; height: 160px; background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 20px;
+      display: flex; justify-content: center; align-items: center; color: var(--accent-gold); transform: translateZ(20px); transition: all 0.3s;
+      background-size: cover; background-position: center; position: relative; overflow: hidden;
+    }
+    .video-thumbnail-placeholder::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.4); transition: 0.3s; }
+    .video-thumbnail-placeholder svg { position: relative; z-index: 2; width: 40px; height: 40px; filter: drop-shadow(0 0 10px var(--accent-gold)); transition: 0.3s; }
+    .document-card:hover .video-thumbnail-placeholder::after { background: rgba(0,0,0,0.1); }
+    .document-card:hover .video-thumbnail-placeholder svg { transform: scale(1.2); }
+    .document-card:hover .video-thumbnail-placeholder { border-color: var(--accent-gold); box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.4); }
+
+    .doc-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transform: translateZ(25px); }
+    .doc-category-badge { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-gold); }
+    .doc-size-badge { font-size: 11px; color: var(--text-muted); font-weight: 700; background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--glass-border); }
+    .doc-title { font-size: 20px; font-weight: 800; line-height: 1.35; color: var(--text-main); margin-bottom: 10px; transform: translateZ(35px); transition: color 0.3s; }
+    .document-card:hover .doc-title { color: var(--accent-gold); }
+    .doc-date { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; display: flex; align-items: center; gap: 8px; transform: translateZ(20px); }
+
+    .btn-download { background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(29, 78, 216, 0.1) 100%); border: 1px solid var(--glass-border); color: var(--text-main); padding: 16px 22px; border-radius: 14px; font-size: 12px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.3s; text-decoration: none; transform: translateZ(30px); }
+    .btn-download:hover { background: var(--text-main); color: var(--bg-base); border-color: var(--text-main); box-shadow: 0 10px 25px rgba(255,255,255,0.1); transform: translateZ(30px) translateY(-2px); }
+    
+    .btn-attach-notes { background: rgba(188, 19, 254, 0.08); border: 1px dashed rgba(188, 19, 254, 0.4); color: #bc13fe; padding: 14px; border-radius: 14px; font-size: 11px; font-weight: 800; width: 100%; margin-top: 12px; text-align: center; text-transform: uppercase; letter-spacing: 1.5px; display: none; transition: all 0.3s; }
+    .btn-attach-notes:hover { background: #bc13fe; color: #ffffff; border-style: solid; box-shadow: 0 5px 15px rgba(188, 19, 254, 0.3); }
+    
+    .btn-delete { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 14px; border-radius: 14px; font-size: 11px; font-weight: 800; width: 100%; margin-top: 12px; text-align: center; text-transform: uppercase; letter-spacing: 1.5px; display: none; transition: all 0.3s; }
+    .btn-delete:hover { background: #ef4444; color: #ffffff; }
+    
+    body.admin-active .btn-delete { display: block; }
+    body.admin-active .btn-attach-notes { display: block; }
+
+    .empty-state-msg { grid-column: 1 / -1; padding: 80px; text-align: center; background: rgba(0,0,0,0.15); border: 1px dashed var(--glass-border); border-radius: 24px; color: var(--text-muted); font-size: 15px; }
+
+    /* === GLASSMORPHISM CHOICE MODAL === */
+    .glass-modal-overlay {
+      position: fixed; inset: 0; z-index: 2147483605;
+      background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      display: flex; justify-content: center; align-items: center;
+      
+      /* THIS IS THE FIX SO INVISIBLE MODALS DO NOT BLOCK CLICKS */
+      visibility: hidden; opacity: 0; pointer-events: none; transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    .glass-modal-overlay.active { opacity: 1; pointer-events: all; visibility: visible; }
+    .glass-modal-content {
+      background: var(--glass-bg); border: 1px solid var(--accent-gold); border-radius: 20px;
+      padding: 40px; text-align: center; max-width: 400px; width: 90%; position: relative;
+      box-shadow: 0 0 40px rgba(56, 189, 248, 0.3), inset 0 0 20px rgba(255,255,255,0.05);
+      transform: scale(0.9) translateY(20px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .glass-modal-overlay.active .glass-modal-content { transform: scale(1) translateY(0); }
+    .glass-modal-title { color: var(--text-main); font-size: 22px; margin-bottom: 10px; font-weight: 800; letter-spacing: 1px; text-shadow: 0 0 10px var(--accent-gold); }
+    .glass-modal-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; }
+    .glass-modal-actions { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+    .action-btn-secondary {
+      padding: 14px 20px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; border-radius: 12px; font-size: 11px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s;
+    }
+    .action-btn-secondary:hover { background: #ef4444; color: #fff; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+    .close-choice-btn { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: var(--text-muted); font-size: 18px; transition: color 0.3s; }
+    .close-choice-btn:hover { color: #ef4444; }
+
+
+
+    @media(max-width: 1150px) {
+      .main-layout-container { grid-template-columns: 1fr; padding: 30px 30px 30px 80px; gap: 40px; }
+      .vanguard-header { padding: 20px 30px; }
+      .nav-center-cluster { display: none; }
+      .fx-trigger { left: 20px !important; bottom: 20px !important; }
+      .video-wrapper { width: 95%; margin-top: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="custom-cursor-ring" id="customCursorRing"></div>
+  <div class="custom-cursor-dot" id="customCursorDot"></div>
+
+  <div id="tech-loader-overlay">
+    <div class="hud-container">
+      <div class="hud-3d">
+        <div class="ring ring-outer"></div>
+        <div class="ring ring-track"></div>
+        <div class="ring ring-mid"></div>
+        <div class="ring ring-inner"></div>
+        <div class="ring ring-inner-2"></div>
+        <div class="ring ring-core"></div>
+      </div>
+    </div>
+    <div class="loader-interface">
+      <button id="btn-initiate" class="tech-btn interactive-target">INITIATE UPLINK</button>
+      <div id="loader-status" class="tech-status hidden">AWAITING INPUT...</div>
+    </div>
+  </div>
+
+  <div class="math-drift-layer" id="mathDriftLayer"></div>
+  
+  <div class="viewport-fixed-scenery">
+    <canvas class="hero-canvas-scenery" id="heroCanvasBackground"></canvas>
+    <div class="fx-canvas-layer" id="fxMatrixLayer"><canvas id="matrixCanvas"></canvas></div>
+    <div class="fx-canvas-layer" id="fxTopologyLayer"><canvas id="topologyCanvas"></canvas></div>
+    <div class="fx-canvas-layer" id="fxTensorLayer"><canvas id="tensorCanvas"></canvas></div>
+    <div class="fx-canvas-layer" id="fxTesseractLayer"><canvas id="tesseractCanvas"></canvas></div>
+    <div class="parallax-layer-grid" id="bgGrid"></div>
+    <div class="plasma-node" id="plasma-cyan"></div>
+    <div class="plasma-node" id="plasma-amber"></div>
+  </div>
+
+  <div class="fx-panel-container" id="fxPanel">
+    <div class="fx-header">
+      <h3>VISUAL ENGINES</h3>
+      <button class="fx-close-btn interactive-target" id="fxCloseBtn">✕</button>
+    </div>
+    <div class="fx-body" id="fxTogglesContainer"></div>
+  </div>
+
+  <header class="vanguard-header" id="vanguardHeader">
+    <div class="brand-identity">Math Vanguard</div>
+    <div class="nav-center-cluster">
+      <nav class="nav-matrix">
+        <a href="mathvanguard.html" class="nav-matrix-item interactive-target">Home</a>
+        <a href="handouts.html" class="nav-matrix-item interactive-target">Handouts</a>
+        <a href="lectures.html" class="nav-matrix-item active interactive-target">Lectures</a>
+        <a href="problemsets.html" class="nav-matrix-item interactive-target">Problem Sets</a>
+        <a href="contact.html" class="nav-matrix-item interactive-target">Contact</a>
+      </nav>
+      <button class="theme-toggle-control interactive-target" id="themeToggleBtn" title="Toggle Horizon State">
+        <svg id="themeIcon" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12.1 22c-5.5 0-10-4.5-10-10 0-4.8 3.4-8.8 8-9.8.5-.1 1 .3.9.8-.1.5-.6.8-1.1.9-3.6.7-6.3 3.9-6.3 7.7 0 4.4 3.6 8 8 8 3.8 0 7-2.7 7.7-6.3.1-.5.5-.9 1-.8.5.1.8.6.7 1.1-.9 4.6-5 8-9.9 8z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-layout-container">
+    
+    <section class="control-sidebar-rack" id="sidebarRack">
+      <div class="glass-category-panel">
+        <div class="panel-title">Vector Branches</div>
+        <div class="category-navigation-list">
+          <button class="category-btn active interactive-target" data-cat="all" data-title="All Lectures"><span class="symbol">\(\mathbb{U}\)</span> All Lectures</button>
+          <button class="category-btn interactive-target" data-cat="number-theory" data-title="Number Theory"><span class="symbol">\(\mathbb{Z}\)</span> Number Theory</button>
+          <button class="category-btn interactive-target" data-cat="calculus" data-title="Calculus & Analysis"><span class="symbol">\(\int\)</span> Calculus & Analysis</button>
+          <button class="category-btn interactive-target" data-cat="geometry" data-title="Geometry"><span class="symbol">\(\triangle\)</span> Geometry</button>
+          <button class="category-btn interactive-target" data-cat="combinatorics" data-title="Combinatorics"><span class="symbol">\(\Omega\)</span> Combinatorics</button>
+        </div>
+      </div>
+
+      <div class="glass-category-panel">
+        <div class="panel-title">Administration Vault</div>
+        <div class="admin-vault-gate" id="adminVaultGate">
+          <div id="adminLoginForm">
+            <input type="email" id="adminEmail" class="input-field interactive-target" placeholder="Admin Encrypted Mail">
+            <input type="password" id="adminPass" class="input-field interactive-target" placeholder="Security Matrix Key">
+            <button class="action-btn-primary interactive-target" id="btnLoginVault">Authenticate</button>
+          </div>
+          <div id="adminUploadForm" style="display: none;">
+            <input type="text" id="lectureTitle" class="input-field interactive-target" placeholder="Lecture Session Title">
+            <select id="lectureCategory" class="input-field interactive-target">
+              <option value="number-theory">Number Theory</option>
+              <option value="calculus">Calculus & Analysis</option>
+              <option value="geometry">Geometry</option>
+              <option value="combinatorics">Combinatorics</option>
+            </select>
+            
+            <input type="text" id="youtubeLinkInput" class="input-field interactive-target" placeholder="Paste YouTube Link Here (Public/Unlisted)">
+            
+            <button class="action-btn-primary interactive-target" id="btnUploadFile">Upload Video Core</button>
+            <input type="text" id="hiddenNotesInput" style="display: none;">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="document-display-matrix" id="contentRack">
+      <div class="matrix-title-block">
+        <h1 id="matrixSectionTitle">All Lectures</h1>
+        <p>Client verification active. Connected directly to global YouTube streaming matrices for instant playback.</p>
+      </div>
+      <div class="document-rack" id="documentRack"></div>
+    </section>
+
+  </main>
+
+  <div class="fx-trigger interactive-target" id="fxTriggerBtn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    <span>FX</span>
+  </div>
+
+  <div id="playback-choice-modal" class="glass-modal-overlay">
+    <div class="glass-modal-content">
+      <button class="close-choice-btn interactive-target" id="closeChoiceBtn">✕</button>
+      <h2 class="glass-modal-title">Select Playback Mode</h2>
+      <p class="glass-modal-desc">Where would you like to initialize the matrix stream?</p>
+      <div class="glass-modal-actions">
+        <button class="action-btn-primary interactive-target" id="btnPlayYouTube" style="width: auto;">PLAY ON YOUTUBE</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <script>
+    let lecturesDatabase = [];
+
+    async function loadFromFirebase() {
+      try {
+        const snap = await window._fbGetDocs(window._fbCollection(window._fbDb, 'lectures'));
+        lecturesDatabase = snap.docs.map(d => ({ ...d.data(), _docId: d.id }));
+        lecturesDatabase.sort((a, b) => b.id - a.id);
+        renderDocumentMatrixStructure();
+      } catch(e) {
+        console.error('Firebase load error:', e);
+      }
+    }
+
+    // Poll for Firebase instead of relying on event (module scripts are async)
+    function waitForFirebase() {
+      if (window._fbDb) {
+        loadFromFirebase();
+      } else {
+        setTimeout(waitForFirebase, 100);
+      }
+    }
+    waitForFirebase();
+    let currentCategoryFilter = 'all';
+    let isAdminLoggedIn = false;
+    let activeLectureIdForNotes = null; 
+    let pendingVideoData = null; // Stores video data temporarily for the choice modal
+    
+    let FxStates = { bloom: true, macro: true, audio: true, grid: true, matrix: false, mathdrift: true, topology: false, tensor: false, tesseract: false };
+
+    // === CUSTOM CURSOR MECHANICAL TRACKING ===
+    const cursorRing = document.getElementById('customCursorRing');
+    const cursorDot = document.getElementById('customCursorDot');
+
+    // THIS IS THE FIX SO YOUR INITIATE BUTTON CAN BE CLICKED ACCURATELY
+    gsap.set(cursorDot, { xPercent: -50, yPercent: -50 });
+    gsap.set(cursorRing, { xPercent: -50, yPercent: -50 });
+
+    window.addEventListener('mousemove', (e) => {
+      gsap.to(cursorDot, { x: e.clientX, y: e.clientY, duration: 0 });
+      gsap.to(cursorRing, { x: e.clientX, y: e.clientY, duration: 0.12, ease: "power2.out" });
+    });
+
+    document.addEventListener('mouseleave', () => document.body.classList.add('cursor-hidden'));
+    document.addEventListener('mouseenter', () => document.body.classList.remove('cursor-hidden'));
+
+    const AudioEngine = {
+      ctx: null,
+      init() { if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } },
+      play(type) {
+        if(!FxStates.audio) return; 
+        this.init(); if (!this.ctx) return;
+        const now = this.ctx.currentTime; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        if (type === 'hover') { osc.type = 'triangle'; osc.frequency.setValueAtTime(350, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.08); gain.gain.setValueAtTime(0.04, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08); osc.start(now); osc.stop(now + 0.08); } 
+        else if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(500, now); osc.frequency.exponentialRampToValueAtTime(120, now + 0.12); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12); osc.start(now); osc.stop(now + 0.12); } 
+        else if (type === 'unlock') { osc.type = 'sine'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554.37, now + 0.08); osc.frequency.setValueAtTime(659.25, now + 0.16); osc.frequency.exponentialRampToValueAtTime(880, now + 0.3); gain.gain.setValueAtTime(0.12, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35); osc.start(now); osc.stop(now + 0.35); } 
+        else if (type === 'error') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(140, now); osc.frequency.linearRampToValueAtTime(90, now + 0.25); gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0.001, now + 0.25); osc.start(now); osc.stop(now + 0.25); } 
+        else if (type === 'sweep') { osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(700, now + 0.4); gain.gain.setValueAtTime(0.06, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4); osc.start(now); osc.stop(now + 0.4); }
+      }
+    };
+
+    const fxTriggerBtn = document.getElementById('fxTriggerBtn'); const fxPanel = document.getElementById('fxPanel'); const fxCloseBtn = document.getElementById('fxCloseBtn'); const fxTogglesContainer = document.getElementById('fxTogglesContainer');
+    const fxControls = [ { id: 'bloom', label: 'BLOOM FX', initial: true }, { id: 'macro', label: 'MACRO GLYPHS', initial: true }, { id: 'audio', label: 'SYNTH AUDIO', initial: true }, { id: 'grid', label: 'VECTOR GRID', initial: true }, { id: 'matrix', label: 'MATRIX RAIN', initial: false }, { id: 'mathdrift', label: 'MATH DRIFT', initial: true }, { id: 'topology', label: '3D TOPOLOGY', initial: false }, { id: 'tensor', label: 'TENSOR FIELD', initial: false }, { id: 'tesseract', label: 'TESSERACT 4D', initial: false } ];
+
+    function buildFxPanel() {
+      fxControls.forEach(ctrl => {
+        FxStates[ctrl.id] = ctrl.initial; const btn = document.createElement('button'); btn.className = `fx-toggle interactive-target ${ctrl.initial ? 'active' : ''}`;
+        btn.innerHTML = `<div class="fx-indicator"></div> ${ctrl.label}`; btn.dataset.fx = ctrl.id;
+        btn.addEventListener('click', () => { FxStates[ctrl.id] = !FxStates[ctrl.id]; btn.classList.toggle('active'); AudioEngine.play('click'); applyFxState(ctrl.id, FxStates[ctrl.id]); });
+        fxTogglesContainer.appendChild(btn);
+      });
+      if(FxStates.bloom) applyFxState('bloom', true); if(!FxStates.grid) applyFxState('grid', false); if(FxStates.mathdrift || FxStates.macro) startMathDrift(); 
+    }
+
+    function applyFxState(fxId, isActive) {
+      switch(fxId) { case 'bloom': document.body.classList.toggle('bloom-active', isActive); break; case 'grid': document.body.classList.toggle('grid-disabled', !isActive); break; case 'mathdrift': case 'macro': if (FxStates.mathdrift || FxStates.macro) { startMathDrift(); } else { stopMathDrift(); } break; case 'matrix': toggleMatrix(isActive); break; case 'topology': toggleTopology(isActive); break; case 'tensor': toggleTensor(isActive); break; case 'tesseract': toggleTesseract(isActive); break; }
+    }
+
+    fxTriggerBtn.addEventListener('click', () => { AudioEngine.play('sweep'); gsap.to(fxPanel, { x: 0, duration: 0.5, ease: "power3.out" }); });
+    fxCloseBtn.addEventListener('click', () => { AudioEngine.play('click'); gsap.to(fxPanel, { x: "-100%", duration: 0.4, ease: "power2.in" }); });
+
+    const mathDriftLayer = document.getElementById('mathDriftLayer'); let mathDriftInterval; const mathSymbolsPool = ['∫', '∑', '∏', '∇', '∂', '∆', 'Ω', '∞', '≈', '∝', 'Φ', 'Ψ', 'λ', 'θ', 'μ', 'σ', '∮', '∯'];
+    function createDriftingSymbol() { const sym = document.createElement('div'); sym.className = 'floating-math-symbol'; sym.innerText = mathSymbolsPool[Math.floor(Math.random() * mathSymbolsPool.length)]; const startX = Math.random() * window.innerWidth; const endX = startX + (Math.random() * 300 - 150); const size = FxStates.macro ? (30 + Math.random() * 60) : (15 + Math.random() * 30); const duration = 12 + Math.random() * 15; sym.style.left = startX + 'px'; sym.style.bottom = '-80px'; sym.style.fontSize = size + 'px'; mathDriftLayer.appendChild(sym); gsap.to(sym, { y: -window.innerHeight - 150, x: endX, rotation: Math.random() * 360 - 180, duration: duration, ease: "none", onComplete: () => sym.remove() }); gsap.to(sym, { opacity: Math.random() * 0.5 + 0.15, duration: duration * 0.25, yoyo: true, repeat: 1, ease: "sine.inOut" }); }
+    function startMathDrift() { if(!mathDriftInterval) { for(let i=0; i<5; i++) { setTimeout(createDriftingSymbol, i*150); } mathDriftInterval = setInterval(createDriftingSymbol, 400); } }
+    function stopMathDrift() { if(mathDriftInterval) { clearInterval(mathDriftInterval); mathDriftInterval = null; gsap.to('.floating-math-symbol', {opacity: 0, duration: 1, onComplete: () => { mathDriftLayer.innerHTML = ''; }}); } }
+
+    const matrixCanvas = document.getElementById('matrixCanvas'); const mCtx = matrixCanvas.getContext('2d'); let matrixInterval; const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"\'#&_(),.;:?!\\|{}<>[]^~'; let fontSize = 16, columns, drops = [];
+    function drawMatrix() { mCtx.fillStyle = 'rgba(2, 6, 23, 0.1)'; mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height); mCtx.fillStyle = '#38bdf8'; mCtx.font = fontSize + 'px monospace'; for(let i = 0; i < drops.length; i++) { const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length)); mCtx.fillText(text, i * fontSize, drops[i] * fontSize); if(drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) drops[i] = 0; drops[i]++; } }
+    function toggleMatrix(isActive) { document.getElementById('fxMatrixLayer').style.opacity = isActive ? "0.6" : "0"; if(isActive) { if(!matrixInterval) matrixInterval = setInterval(drawMatrix, 40); } else { clearInterval(matrixInterval); matrixInterval = null; } }
+
+    const topoCanvas = document.getElementById('topologyCanvas'); const tCtx = topoCanvas.getContext('2d'); let topoReq, topoTime = 0;
+    function drawTopology() { tCtx.clearRect(0,0, topoCanvas.width, topoCanvas.height); tCtx.strokeStyle = 'rgba(56, 189, 248, 0.4)'; tCtx.lineWidth = 1; for(let y = 0; y < topoCanvas.height; y += 40) { tCtx.beginPath(); for(let x = 0; x <= topoCanvas.width; x += 20) { let yOffset = Math.sin((x + topoTime) * 0.005) * Math.cos((y + topoTime) * 0.005) * 60; tCtx.lineTo(x, y + yOffset); } tCtx.stroke(); } topoTime += 3; topoReq = requestAnimationFrame(drawTopology); }
+    function toggleTopology(isActive) { document.getElementById('fxTopologyLayer').style.opacity = isActive ? "1" : "0"; if(isActive) { if(!topoReq) drawTopology(); } else { cancelAnimationFrame(topoReq); topoReq = null; } }
+
+    const tensorCanvas = document.getElementById('tensorCanvas'); const tenCtx = tensorCanvas.getContext('2d'); let tensorReq, tenTime = 0;
+    function drawTensor() { tenCtx.clearRect(0,0, tensorCanvas.width, tensorCanvas.height); tenCtx.strokeStyle = 'rgba(251, 191, 36, 0.5)'; tenCtx.lineWidth = 1.5; for(let x = 20; x < tensorCanvas.width; x += 40) { for(let y = 20; y < tensorCanvas.height; y += 40) { let angle = Math.sin(x * 0.005 + tenTime) + Math.cos(y * 0.005 + tenTime); tenCtx.beginPath(); tenCtx.moveTo(x, y); tenCtx.lineTo(x + Math.cos(angle)*15, y + Math.sin(angle)*15); tenCtx.stroke(); } } tenTime += 0.02; tensorReq = requestAnimationFrame(drawTensor); }
+    function toggleTensor(isActive) { document.getElementById('fxTensorLayer').style.opacity = isActive ? "1" : "0"; if(isActive) { if(!tensorReq) drawTensor(); } else { cancelAnimationFrame(tensorReq); tensorReq = null; } }
+
+    const tessCanvas = document.getElementById('tesseractCanvas'); const tesCtx = tessCanvas.getContext('2d'); let tessReq, tessAngle = 0;
+    function drawTesseract() { tesCtx.clearRect(0,0, tessCanvas.width, tessCanvas.height); tesCtx.strokeStyle = 'rgba(129, 140, 248, 0.4)'; tesCtx.lineWidth = 2; let cx = tessCanvas.width/2, cy = tessCanvas.height/2; let size1 = 200 + Math.sin(tessAngle)*80; let size2 = 400 - Math.sin(tessAngle)*80; tesCtx.save(); tesCtx.translate(cx, cy); tesCtx.rotate(tessAngle); tesCtx.strokeRect(-size1/2, -size1/2, size1, size1); tesCtx.strokeRect(-size2/2, -size2/2, size2, size2); tesCtx.beginPath(); tesCtx.moveTo(-size1/2, -size1/2); tesCtx.lineTo(-size2/2, -size2/2); tesCtx.moveTo(size1/2, -size1/2); tesCtx.lineTo(size2/2, -size2/2); tesCtx.moveTo(-size1/2, size1/2); tesCtx.lineTo(-size2/2, size2/2); tesCtx.moveTo(size1/2, size1/2); tesCtx.lineTo(size2/2, size2/2); tesCtx.stroke(); tesCtx.restore(); tessAngle += 0.01; tessReq = requestAnimationFrame(drawTesseract); }
+    function toggleTesseract(isActive) { document.getElementById('fxTesseractLayer').style.opacity = isActive ? "1" : "0"; if(isActive) { if(!tessReq) drawTesseract(); } else { cancelAnimationFrame(tessReq); tessReq = null; } }
+
+    const canvas = document.getElementById('heroCanvasBackground'); const ctx = canvas.getContext('2d'); let stars = [];
+    function resizeCanvas() { 
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight; matrixCanvas.width = window.innerWidth; matrixCanvas.height = window.innerHeight;
+      topoCanvas.width = window.innerWidth; topoCanvas.height = window.innerHeight; tensorCanvas.width = window.innerWidth; tensorCanvas.height = window.innerHeight;
+      tessCanvas.width = window.innerWidth; tessCanvas.height = window.innerHeight; columns = Math.floor(window.innerWidth / fontSize);
+      drops = []; for(let x = 0; x < columns; x++) drops[x] = 1;
+    }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
+    for (let i = 0; i < 45; i++) { stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.5 + 0.5, dx: (Math.random() - 0.5) * 0.3, dy: (Math.random() - 0.5) * 0.3, alpha: Math.random() }); }
+
+    function animateBackground() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height); const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      stars.forEach(star => {
+        star.x += star.dx; star.y += star.dy; if (star.x < 0 || star.x > canvas.width) star.dx *= -1; if (star.y < 0 || star.y > canvas.height) star.dy *= -1;
+        ctx.beginPath(); ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2); ctx.fillStyle = (isDark ? `rgba(56, 189, 248, ${0.15 + Math.sin(Date.now() * 0.001 + star.alpha) * 0.2})` : `rgba(248, 113, 113, ${0.15 + Math.sin(Date.now() * 0.001 + star.alpha) * 0.2})`); ctx.fill();
+      });
+      for (let i = 0; i < stars.length; i++) {
+        for (let j = i + 1; j < stars.length; j++) {
+          let dist = Math.hypot(stars[i].x - stars[j].x, stars[i].y - stars[j].y);
+          if (dist < 130) { ctx.beginPath(); ctx.moveTo(stars[i].x, stars[i].y); ctx.lineTo(stars[j].x, stars[j].y); ctx.strokeStyle = isDark ? `rgba(56, 189, 248, ${0.04 * (1 - dist / 130)})` : `rgba(248, 113, 113, ${0.04 * (1 - dist / 130)})`; ctx.lineWidth = 0.8; ctx.stroke(); }
+        }
+      } requestAnimationFrame(animateBackground);
+    }
+    animateBackground();
+
+    gsap.to("#plasma-cyan", { x: '+=60', y: '-=40', duration: 7, repeat: -1, yoyo: true, ease: "sine.inOut" });
+    gsap.to("#plasma-amber", { x: '-=50', y: '+=80', duration: 9, repeat: -1, yoyo: true, ease: "sine.inOut" });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const btnInitiate = document.getElementById("btn-initiate"); const loaderStatus = document.getElementById("loader-status"); const overlay = document.getElementById("tech-loader-overlay");
+      btnInitiate.addEventListener("click", () => {
+        AudioEngine.play('click'); btnInitiate.classList.add("hidden"); loaderStatus.classList.remove("hidden");
+        const tl = gsap.timeline();
+        tl.to(loaderStatus, { duration: 0.1, textContent: "DECRYPTING MATRIX PROTOCOLS...", ease: "none" })
+          .to(loaderStatus, { duration: 0.1, textContent: "BYPASSING FIREWALL...", delay: 1, ease: "none" })
+          .to(loaderStatus, { duration: 0.1, textContent: "SYNCHRONIZING VIDEO STREAMS...", delay: 0.8, ease: "none" })
+          .to(loaderStatus, { 
+            duration: 0.1, textContent: "ACCESS GRANTED.", color: "#00e5ff", delay: 0.8,
+            onComplete: () => { AudioEngine.play('unlock'); gsap.to(".hud-3d", { scale: 0, opacity: 0, rotationY: 180, duration: 0.6, ease: "back.in(1.5)" }); gsap.to(loaderStatus, { opacity: 0, duration: 0.4, delay: 0.3 }); }
+          })
+          .to(overlay, { y: "-100%", duration: 1.2, ease: "power4.inOut", delay: 0.8 })
+          .to("#vanguardHeader", { opacity: 1, y: 0, duration: 0.8, ease: "power4.out" }, "-=0.6")
+          .to("#sidebarRack", { opacity: 1, translateX: 0, duration: 0.6, ease: "power3.out" }, "-=0.4")
+          .to("#contentRack", { opacity: 1, translateX: 0, duration: 0.6, ease: "power3.out" }, "-=0.5")
+          .from(".document-card", { scale: 0.9, opacity: 0, duration: 0.5, stagger: 0.06, ease: "back.out(1.2)" }, "-=0.3");
+      });
+    });
+
+    function mapInteractionTargets() {
+      document.querySelectorAll('.interactive-target, .category-btn, .btn-download, .action-btn-primary, .btn-delete, .btn-attach-notes, input, select, .file-drop-area, .nav-matrix-item, .theme-toggle-control').forEach(elem => {
+        if (elem.dataset.mapped) return; elem.dataset.mapped = "true";
+        elem.addEventListener('mouseenter', () => { document.body.classList.add('link-hovered'); AudioEngine.play('hover'); gsap.to(elem, { scale: 1.02, duration: 0.2, ease: "power1.out" }); });
+        elem.addEventListener('mouseleave', () => { document.body.classList.remove('link-hovered'); gsap.to(elem, { scale: 1, duration: 0.3, ease: "power2.out" }); });
+        elem.addEventListener('click', () => { if(!elem.classList.contains('fx-toggle')) { AudioEngine.play('click'); } });
+      });
+    }
+
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => { const bounds = btn.getBoundingClientRect(); const x = e.clientX - bounds.left - bounds.width / 2; const y = e.clientY - bounds.top - bounds.height / 2; gsap.to(btn, { x: x * 0.25, y: y * 0.25, duration: 0.3, ease: "power2.out" }); });
+      btn.addEventListener('mouseleave', () => { gsap.to(btn, { x: 0, y: 0, duration: 0.4, ease: "elastic.out(1.1, 0.6)" }); });
+    });
+
+    const ADMIN_CREDENTIALS = { mail: "mathwithphysics32202005@gmail.com", pass: "Ayush3220" };
+    const btnLoginVault = document.getElementById('btnLoginVault'); const adminVaultGate = document.getElementById('adminVaultGate'); const adminLoginForm = document.getElementById('adminLoginForm'); const adminUploadForm = document.getElementById('adminUploadForm');
+
+    btnLoginVault.addEventListener('click', () => {
+      const emailInput = document.getElementById('adminEmail').value; const passInput = document.getElementById('adminPass').value;
+      if(emailInput === ADMIN_CREDENTIALS.mail && passInput === ADMIN_CREDENTIALS.pass) { 
+        AudioEngine.play('unlock'); isAdminLoggedIn = true; executeAdminAuthorization(); renderDocumentMatrixStructure(); 
+      } else { AudioEngine.play('error'); alert("Security Matrix Key Rejected. Access Denied."); }
+    });
+
+    function executeAdminAuthorization() {
+      document.body.classList.add('admin-active'); adminVaultGate.classList.add('logged-in');
+      gsap.to(adminLoginForm, { opacity: 0, duration: 0.3, onComplete: () => { adminLoginForm.style.display = 'none'; adminUploadForm.style.display = 'block'; gsap.fromTo(adminUploadForm, { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" }); mapInteractionTargets(); }});
+    }
+
+    // === YOUTUBE UPLOAD LOGIC ===
+    const btnUploadFile = document.getElementById('btnUploadFile');
+
+    function extractYouTubeID(url) {
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/);
+        return match ? match[1] : null;
+    }
+
+    btnUploadFile.addEventListener('click', () => {
+      const title = document.getElementById('lectureTitle').value.trim(); 
+      const category = document.getElementById('lectureCategory').value;
+      const ytLink = document.getElementById('youtubeLinkInput').value.trim();
+
+      if(!title || !ytLink) { AudioEngine.play('error'); alert("Missing attributes. Please supply a title and a YouTube link."); return; }
+      
+      const ytId = extractYouTubeID(ytLink);
+      if(!ytId) { AudioEngine.play('error'); alert("Invalid YouTube URL. Please ensure it is a valid video link."); return; }
+
+      const thumbUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+
+      const compiledLectureItem = { 
+          id: Date.now(), title: title, category: category, size: `HD STREAM`, 
+          date: new Date().toISOString().split('T')[0], 
+          youtubeId: ytId,
+          thumbnailURL: thumbUrl, 
+          notesBase64: null 
+      };
+      
+      window._fbAddDoc(window._fbCollection(window._fbDb, 'lectures'), compiledLectureItem).then(docRef => {
+        compiledLectureItem._docId = docRef.id;
+        lecturesDatabase.unshift(compiledLectureItem);
+        renderDocumentMatrixStructure();
+      });
+      
+      document.getElementById('lectureTitle').value = ''; 
+      document.getElementById('youtubeLinkInput').value = ''; 
+      AudioEngine.play('unlock');
+    });
+
+    function attachNotesWithDriveLink() {
+        if(!activeLectureIdForNotes) return;
+        const driveLink = prompt("Paste Google Drive link for the Notes PDF:");
+        if(!driveLink || !driveLink.trim()) return;
+        const lectureIndex = lecturesDatabase.findIndex(l => l.id === activeLectureIdForNotes);
+        if(lectureIndex !== -1) {
+            lecturesDatabase[lectureIndex].notesBase64 = driveLink.trim();
+            const docId = lecturesDatabase[lectureIndex]._docId;
+            if(docId) window._fbUpdateDoc(window._fbDoc(window._fbDb, 'lectures', docId), { notesBase64: driveLink.trim() });
+            AudioEngine.play('unlock');
+            alert("Notes successfully attached to the stream.");
+            renderDocumentMatrixStructure();
+        }
+    }
+
+    const documentRack = document.getElementById('documentRack');
+
+    function renderDocumentMatrixStructure() {
+      documentRack.innerHTML = '';
+      const filteredDataset = lecturesDatabase.filter(item => { return currentCategoryFilter === 'all' || item.category === currentCategoryFilter; });
+      if(filteredDataset.length === 0) { documentRack.innerHTML = `<div class="empty-state-msg">No operational video streams loaded inside this structural vector branch.</div>`; return; }
+
+      filteredDataset.forEach(doc => {
+        const structuralCard = document.createElement('div'); structuralCard.className = 'document-card'; structuralCard.setAttribute('data-id', doc.id);
+        const displayCategoryName = doc.category.replace('-', ' '); 
+        const thumbStyle = doc.thumbnailURL ? `background-image: url('${doc.thumbnailURL}');` : '';
+
+        let notesHTML = '';
+        if(doc.notesBase64) {
+            notesHTML = `<a href="${doc.notesBase64}" target="_blank" class="btn-download interactive-target" style="margin-top: 10px; background: rgba(188, 19, 254, 0.1); border-color: #bc13fe; color: #bc13fe;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> VIEW NOTES</a>`;
+        } else if (isAdminLoggedIn) {
+            notesHTML = `<button class="btn-attach-notes attach-notes-trigger interactive-target" style="display:block;">ATTACH NOTES (PDF)</button>`;
+        }
+
+        structuralCard.innerHTML = `
+          <div>
+            <div class="doc-meta"><span class="doc-category-badge">${displayCategoryName}</span><span class="doc-size-badge">${doc.size}</span></div>
+            <div class="video-thumbnail-placeholder interactive-target play-trigger" style="${thumbStyle}">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </div>
+            <div class="doc-title">${doc.title}</div>
+            <div class="doc-date"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Streamed ${doc.date}</div>
+          </div>
+          <div>
+            <button class="btn-download play-trigger interactive-target"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> PLAY LECTURE</button>
+            ${notesHTML}
+            <button class="btn-delete contextual-purge-trigger interactive-target">Purge Video</button>
+          </div>
+        `; documentRack.appendChild(structuralCard);
+      });
+      mapInteractionTargets(); applyMultiAxisPhysicsToCards();
+    }
+
+    const playbackChoiceModal = document.getElementById('playback-choice-modal');
+
+    documentRack.addEventListener('click', (e) => {
+      const cardElement = e.target.closest('.document-card'); if (!cardElement) return;
+      const targetDocumentId = parseInt(cardElement.getAttribute('data-id'));
+      
+      if (e.target.classList.contains('contextual-purge-trigger')) { 
+          if(confirm("Confirm removal of this stream from global matrices?")) { 
+              AudioEngine.play('sweep'); 
+              const toDelete = lecturesDatabase.find(item => item.id === targetDocumentId);
+              if(toDelete && toDelete._docId) window._fbDeleteDoc(window._fbDoc(window._fbDb, 'lectures', toDelete._docId));
+              lecturesDatabase = lecturesDatabase.filter(item => item.id !== targetDocumentId);
+              renderDocumentMatrixStructure(); 
+          } 
+          return;
+      }
+
+      if (e.target.classList.contains('attach-notes-trigger')) {
+          AudioEngine.play('click');
+          activeLectureIdForNotes = targetDocumentId;
+          attachNotesWithDriveLink();
+          return;
+      }
+      
+      if (e.target.closest('.play-trigger')) {
+          const videoData = lecturesDatabase.find(item => item.id === targetDocumentId);
+          if(videoData && videoData.youtubeId) {
+              pendingVideoData = videoData;
+              AudioEngine.play('unlock');
+              playbackChoiceModal.classList.add('active'); 
+          } else {
+              alert("Video stream ID missing or corrupted.");
+          }
+      }
+    });
+
+    document.getElementById('btnPlayYouTube').addEventListener('click', () => {
+        AudioEngine.play('sweep');
+        playbackChoiceModal.classList.remove('active');
+        if(pendingVideoData) {
+            window.open(`https://www.youtube.com/watch?v=${pendingVideoData.youtubeId}`, '_blank');
+        }
+    });
+
+    document.getElementById('closeChoiceBtn').addEventListener('click', () => {
+        AudioEngine.play('click');
+        playbackChoiceModal.classList.remove('active');
+    });
+
+
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+        currentCategoryFilter = btn.getAttribute('data-cat'); document.getElementById('matrixSectionTitle').innerText = btn.getAttribute('data-title'); AudioEngine.play('sweep');
+        gsap.fromTo(".document-card", { opacity: 0, y: 15, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, stagger: 0.04, ease: "power2.out" }); renderDocumentMatrixStructure();
+      });
+    });
+
+    function applyMultiAxisPhysicsToCards() {
+      document.querySelectorAll('.document-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => { const bounds = card.getBoundingClientRect(); const tiltX = (e.clientY - (bounds.top + bounds.height / 2)) * 0.045; const tiltY = -(e.clientX - (bounds.left + bounds.width / 2)) * 0.045; gsap.to(card, { rotateX: tiltX, rotateY: tiltY, transformPerspective: 1200, duration: 0.3, ease: "power2.out" }); });
+        card.addEventListener('mouseleave', () => { gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.5, ease: "power3.out" }); });
+      });
+    }
+
+    const toggleBtn = document.getElementById('themeToggleBtn'); const themeIcon = document.getElementById('themeIcon'); const htmlElement = document.documentElement;
+    const sunSVGPath = `<path fill="currentColor" d="M12 7c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zm0 8c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3zm0-10c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1s-1 .4-1 1v1c0 .6.4 1 1 1zm0 14c-.6 0-1 .4-1 1v1c0 .6.4 1 1 1s1-.4 1-1v-1c0-.6-.4-1-1-1zm8.5-7.5h-1c-.6 0-1 .4-1 1s.4 1 1 1h1c.6 0 1-.4 1-1s-.4-1-1-1zM5 12c0-.6-.4-1-1-1H3c-.6 0-1 .4-1 1s.4 1 1 1h1c.6 0 1-.4 1-1zm13.1-6.1c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4l.7.7c.4.4 1 .4 1.4 0s.4-1 0-1.4l-.7-.7zM6.6 16.6c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4l.7.7c.4.4 1 .4 1.4 0s.4-1 0-1.4l-.7-.7zm10.8 0l.7.7c.4.4 1 .4 1.4 0s.4-1 0-1.4l-.7-.7c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4zM6.6 6.1l-.7-.7c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4l.7.7c.4.4 1 .4 1.4 0s.4-1 0-1.4z"/>`;
+    const moonSVGPath = `<path fill="currentColor" d="M12.1 22c-5.5 0-10-4.5-10-10 0-4.8 3.4-8.8 8-9.8.5-.1 1 .3.9.8-.1.5-.6.8-1.1.9-3.6.7-6.3 3.9-6.3 7.7 0 4.4 3.6 8 8 8 3.8 0 7-2.7 7.7-6.3.1-.5.5-.9 1-.8.5.1.8.6.7 1.1-.9 4.6-5 8-9.9 8z"/>`;
+    
+    toggleBtn.addEventListener('click', () => {
+      const targetTheme = htmlElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; htmlElement.setAttribute('data-theme', targetTheme);
+      themeIcon.innerHTML = targetTheme === 'light' ? sunSVGPath : moonSVGPath; AudioEngine.play('unlock'); gsap.to(toggleBtn, { rotate: targetTheme === 'light' ? 180 : 0, duration: 0.5, ease: "back.out(1.5)" });
+    });
+
+    window.addEventListener('scroll', () => { gsap.to("#bgGrid", { y: window.scrollY * 0.2, overwrite: "auto" }); });
+    buildFxPanel(); renderDocumentMatrixStructure(); mapInteractionTargets();
+  </script>
+</body>
+</html>
