@@ -18,6 +18,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     const firebaseConfig = {
       apiKey: "AIzaSyCJN5QvKnbLgrTjlRbpoH9XtfYC0cTxgbk",
       authDomain: "math-vanguard.firebaseapp.com",
@@ -28,6 +29,7 @@
     };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
     window._fbDb = db;
     window._fbCollection = collection;
     window._fbGetDocs = getDocs;
@@ -35,6 +37,10 @@
     window._fbDeleteDoc = deleteDoc;
     window._fbDoc = doc;
     window._fbUpdateDoc = updateDoc;
+    window._fbAuth = auth;
+    window._fbSignIn = signInWithEmailAndPassword;
+    window._fbSignOut = signOut;
+    window._fbOnAuthStateChanged = onAuthStateChanged;
     window.dispatchEvent(new Event('firebase-ready'));
   </script>
 
@@ -348,6 +354,8 @@
           <button class="category-btn interactive-target" data-cat="calculus" data-title="Calculus & Analysis"><span class="symbol">\(\int\)</span> Calculus & Analysis</button>
           <button class="category-btn interactive-target" data-cat="geometry" data-title="Geometry"><span class="symbol">\(\triangle\)</span> Geometry</button>
           <button class="category-btn interactive-target" data-cat="combinatorics" data-title="Combinatorics"><span class="symbol">\(\Omega\)</span> Combinatorics</button>
+          <button class="category-btn interactive-target" data-cat="inequality" data-title="Inequalities"><span class="symbol">\(\geq\)</span> Inequalities</button>
+          <button class="category-btn interactive-target" data-cat="algebra" data-title="Algebra"><span class="symbol">\(x^n\)</span> Algebra</button>
         </div>
       </div>
 
@@ -366,12 +374,15 @@
               <option value="calculus">Calculus & Analysis</option>
               <option value="geometry">Geometry</option>
               <option value="combinatorics">Combinatorics</option>
+              <option value="inequality">Inequalities</option>
+              <option value="algebra">Algebra</option>
             </select>
             
             <input type="text" id="youtubeLinkInput" class="input-field interactive-target" placeholder="Paste YouTube Link Here (Public/Unlisted)">
             
             <button class="action-btn-primary interactive-target" id="btnUploadFile">Upload Video Core</button>
             <input type="text" id="hiddenNotesInput" style="display: none;">
+            <button class="action-btn-primary interactive-target" id="btnLogoutVault" style="margin-top:8px; background:rgba(239,68,68,0.1); border-color:#ef4444; color:#ef4444;">Sign Out</button>
           </div>
         </div>
       </div>
@@ -570,14 +581,32 @@
       btn.addEventListener('mouseleave', () => { gsap.to(btn, { x: 0, y: 0, duration: 0.4, ease: "elastic.out(1.1, 0.6)" }); });
     });
 
-    const ADMIN_CREDENTIALS = { mail: "mathwithphysics32202005@gmail.com", pass: "Ayush3220" };
     const btnLoginVault = document.getElementById('btnLoginVault'); const adminVaultGate = document.getElementById('adminVaultGate'); const adminLoginForm = document.getElementById('adminLoginForm'); const adminUploadForm = document.getElementById('adminUploadForm');
 
-    btnLoginVault.addEventListener('click', () => {
-      const emailInput = document.getElementById('adminEmail').value; const passInput = document.getElementById('adminPass').value;
-      if(emailInput === ADMIN_CREDENTIALS.mail && passInput === ADMIN_CREDENTIALS.pass) { 
-        AudioEngine.play('unlock'); isAdminLoggedIn = true; executeAdminAuthorization(); renderDocumentMatrixStructure(); 
-      } else { AudioEngine.play('error'); alert("Security Matrix Key Rejected. Access Denied."); }
+    function waitForAuth() {
+      if (window._fbAuth && window._fbOnAuthStateChanged) {
+        window._fbOnAuthStateChanged(window._fbAuth, (user) => {
+          if (user && !isAdminLoggedIn) { isAdminLoggedIn = true; executeAdminAuthorization(); renderDocumentMatrixStructure(); }
+        });
+      } else { setTimeout(waitForAuth, 100); }
+    }
+    waitForAuth();
+
+    btnLoginVault.addEventListener('click', async () => {
+      const emailInput = document.getElementById('adminEmail').value.trim();
+      const passInput = document.getElementById('adminPass').value.trim();
+      if (!emailInput || !passInput) { AudioEngine.play('error'); alert("Please enter your credentials."); return; }
+      try {
+        await window._fbSignIn(window._fbAuth, emailInput, passInput);
+      } catch (err) { AudioEngine.play('error'); alert("Security Matrix Key Rejected. Access Denied."); }
+    });
+
+    document.getElementById('btnLogoutVault').addEventListener('click', async () => {
+      await window._fbSignOut(window._fbAuth);
+      isAdminLoggedIn = false; document.body.classList.remove('admin-active'); adminVaultGate.classList.remove('logged-in');
+      adminUploadForm.style.display = 'none'; adminLoginForm.style.display = 'block';
+      gsap.fromTo(adminLoginForm, { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" });
+      renderDocumentMatrixStructure(); AudioEngine.play('click');
     });
 
     function executeAdminAuthorization() {
