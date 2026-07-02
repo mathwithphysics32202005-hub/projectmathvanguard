@@ -12,6 +12,8 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <meta name="description" content="Math Vanguard is a National & International Math Olympiad preparation program. Join our portal for exclusive access to olympiad-level lectures, handouts, and problem sets.">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js"></script>
 
   <!-- HIGH-PRIORITY ASSET PRELOADING: browser fetches these immediately on head parse -->
   <link rel="preload" href="https://res.cloudinary.com/ds21tzogf/video/upload/v1782631765/background_zv5vlj.mp4" as="video" type="video/mp4" fetchpriority="high">
@@ -575,6 +577,61 @@
         display: none !important;
       }
     }
+
+    /* ==========================================
+       OTP VERIFICATION STEP
+       ========================================== */
+    #stepOtp { display: none; }
+
+    .otp-instruction {
+      font-size: 13.5px;
+      color: #94a3b8;
+      text-align: center;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+    .otp-instruction strong { color: #fde047; font-weight: 600; }
+
+    .otp-field-container input {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 10px;
+      padding-left: 10px;
+    }
+
+    .otp-error, .form-error-text {
+      min-height: 16px;
+      font-size: 12.5px;
+      color: #f87171;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #verifyOtpBtn {
+      position: static;
+      width: 100%;
+      height: 44px;
+      margin-top: 6px;
+    }
+
+    .otp-meta-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 18px;
+    }
+
+    .text-link-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    .text-link-btn:hover:not(:disabled) { color: #fbbf24; }
+    .text-link-btn:disabled { color: #3f4a5f; cursor: default; }
   </style>
 </head>
 <body>
@@ -648,36 +705,49 @@
         </div>
 
         <form id="securePortalForm">
-          <div class="input-field-container">
-            <input type="text" id="fieldName" placeholder=" " autocomplete="off">
-            <label for="fieldName">Full Name</label>
-            <div class="cyber-scanner-line"></div>
-          </div>
-
-          <div class="input-field-container">
-            <input type="email" id="fieldEmail" placeholder=" " autocomplete="off">
-            <label for="fieldEmail">Email Address</label>
-            <div class="cyber-scanner-line"></div>
-          </div>
-
-          <div class="hint-input-wrapper">
+          <div id="stepCredentials">
             <div class="input-field-container">
-              <input type="text" id="fieldAccessCode" placeholder=" " autocomplete="off">
-              <label for="fieldAccessCode" id="variableCodeLabel">Course Code</label>
+              <input type="text" id="fieldName" placeholder=" " autocomplete="off">
+              <label for="fieldName">Full Name</label>
               <div class="cyber-scanner-line"></div>
             </div>
-            <button type="button" class="hint-bulb-trigger" id="bulbTrigger">
-              <svg viewBox="0 0 24 24"><path d="M12 2C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>
-            </button>
+
+            <div class="input-field-container">
+              <input type="email" id="fieldEmail" placeholder=" " autocomplete="off">
+              <label for="fieldEmail">Email Address</label>
+              <div class="cyber-scanner-line"></div>
+            </div>
+
+            <div class="hint-input-wrapper">
+              <div class="input-field-container">
+                <input type="text" id="fieldAccessCode" placeholder=" " autocomplete="off">
+                <label for="fieldAccessCode" id="variableCodeLabel">Course Code</label>
+                <div class="cyber-scanner-line"></div>
+              </div>
+              <button type="button" class="hint-bulb-trigger" id="bulbTrigger">
+                <svg viewBox="0 0 24 24"><path d="M12 2C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>
+              </button>
+            </div>
+
+            <div class="hint-drawer-banner" id="hintDrawer">
+              <p>Join the Telegram channel to know the code</p>
+              <a href="https://t.me/+73Bjx4Oy6CZiOGI1" target="_blank" class="telegram-redirect-link">Telegram Channel</a>
+            </div>
+
+            <div class="evasion-boundary-wrapper" id="evadeBoundary">
+              <button type="submit" class="launch-portal-btn" id="submitPortalBtn">Launch Portal</button>
+            </div>
+            <p class="form-error-text" id="credError"></p>
           </div>
 
-          <div class="hint-drawer-banner" id="hintDrawer">
-            <p>Join the Telegram channel to know the code</p>
-            <a href="https://t.me/+73Bjx4Oy6CZiOGI1" target="_blank" class="telegram-redirect-link">Telegram Channel</a>
-          </div>
-
-          <div class="evasion-boundary-wrapper" id="evadeBoundary">
-            <button type="submit" class="launch-portal-btn" id="submitPortalBtn">Launch Portal</button>
+          <div id="stepOtp">
+            <p class="otp-instruction">We sent a sign-in link to<br><strong id="otpEmailDisplay"></strong></p>
+            <p class="otp-instruction" style="margin-top:-14px;font-size:12px;">Open that inbox on this device and tap the link — it'll bring you right back here, signed in.</p>
+            <p class="otp-error" id="otpError"></p>
+            <div class="otp-meta-row">
+              <button type="button" id="resendOtpBtn" class="text-link-btn">Resend link</button>
+              <button type="button" id="backToDetailsBtn" class="text-link-btn">← Edit details</button>
+            </div>
           </div>
         </form>
       </div>
@@ -704,6 +774,33 @@
     const securePortalForm = document.getElementById('securePortalForm');
     const submitPortalBtn = document.getElementById('submitPortalBtn');
     const evadeBoundary = document.getElementById('evadeBoundary');
+    const stepCredentials = document.getElementById('stepCredentials');
+    const stepOtp = document.getElementById('stepOtp');
+    const otpEmailDisplay = document.getElementById('otpEmailDisplay');
+    const otpError = document.getElementById('otpError');
+    const credError = document.getElementById('credError');
+    const resendOtpBtn = document.getElementById('resendOtpBtn');
+    const backToDetailsBtn = document.getElementById('backToDetailsBtn');
+
+    // ==========================================
+    // FIREBASE INIT — replace with YOUR project's config
+    // Firebase Console → Project settings → General → Your apps → SDK setup and configuration
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const fbAuth = firebase.auth();
+    const actionCodeSettings = {
+      url: window.location.origin + window.location.pathname,
+      handleCodeInApp: true
+    };
+    let resendCooldownActive = false;
 
     let currentWorkflowActive = false;
     let hintDrawerActive = false;
@@ -909,6 +1006,12 @@
           securePortalForm.reset();
           updateHologramStatus('locked');
           if (hintDrawerActive) toggleHintDrawerEngine(false);
+          stepOtp.style.display = 'none';
+          stepOtp.style.opacity = '';
+          stepCredentials.style.display = 'block';
+          stepCredentials.style.opacity = '';
+          otpError.textContent = '';
+          credError.textContent = '';
         }
       });
       resetTimeline.to(coinStageContainer, {
@@ -1072,31 +1175,143 @@
         shakeTL.to(parallaxCard, { x: -10, duration: 0.05, repeat: 5, yoyo: true });
         shakeTL.to(parallaxCard, { x: 0, duration: 0.1 });
       } else {
-        const successAudio = document.getElementById('soundSuccess');
-        if (successAudio) { successAudio.currentTime = 0; successAudio.volume = 0.5; successAudio.play().catch(()=>{}); }
-
-        // ── MathVanguard Integration ──
-        const userName = document.getElementById('fieldName').value.trim();
-        const userEmail = document.getElementById('fieldEmail').value.trim();
-        localStorage.setItem('mv_li', '1');
-        localStorage.setItem('mv_un', userName);
-        localStorage.setItem('mv_ue', userEmail);
-
-        comingSoonOverlay.style.display = 'flex';
-        gsap.to(comingSoonOverlay, { opacity: 1, duration: 0.4, ease: "power2.out" });
-        gsap.to(comingSoonBox, { scale: 1, opacity: 1, duration: 0.5, delay: 0.1, ease: "back.out(1.2)" });
-
-        setTimeout(() => {
-          if (window.opener && !window.opener.closed) {
-            window.opener.postMessage({ type: 'EDUVERSE_LOGIN_SUCCESS', userName, userEmail }, '*');
-            window.opener.focus();
-            window.close();
-          } else {
-            window.location.href = 'mathvanguard.html';
-          }
-        }, 2000);
+        requestMagicLink();
       }
     });
+
+    // ==========================================
+    // MAGIC LINK REQUEST / RESEND
+    // ==========================================
+    async function requestMagicLink() {
+      const userEmail = document.getElementById('fieldEmail').value.trim();
+      const userName = document.getElementById('fieldName').value.trim();
+      credError.textContent = '';
+      submitPortalBtn.disabled = true;
+      const originalLabel = submitPortalBtn.textContent;
+      submitPortalBtn.textContent = 'Sending link...';
+
+      try {
+        await fbAuth.sendSignInLinkToEmail(userEmail, actionCodeSettings);
+        window.localStorage.setItem('mv_pending_email', userEmail);
+        window.localStorage.setItem('mv_pending_name', userName);
+        otpEmailDisplay.textContent = userEmail;
+        showOtpStep();
+        beginResendCooldown();
+      } catch (err) {
+        credError.textContent = (err && err.message) ? err.message : 'Could not send the link. Try again.';
+        const errorAudio = document.getElementById('soundError');
+        if (errorAudio) { errorAudio.currentTime = 0; errorAudio.volume = 0.4; errorAudio.play().catch(()=>{}); }
+      } finally {
+        submitPortalBtn.disabled = false;
+        submitPortalBtn.textContent = originalLabel;
+      }
+    }
+
+    function showOtpStep() {
+      gsap.to(stepCredentials, { opacity: 0, duration: 0.25, onComplete: () => {
+        stepCredentials.style.display = 'none';
+        stepOtp.style.display = 'block';
+        gsap.fromTo(stepOtp, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+        fieldOtp.value = '';
+        otpError.textContent = '';
+        fieldOtp.focus();
+      }});
+    }
+
+    function showCredentialsStep() {
+      gsap.to(stepOtp, { opacity: 0, duration: 0.25, onComplete: () => {
+        stepOtp.style.display = 'none';
+        stepCredentials.style.display = 'block';
+        gsap.fromTo(stepCredentials, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+      }});
+    }
+
+    resendOtpBtn.addEventListener('click', async () => {
+      if (resendCooldownActive) return;
+      const userEmail = document.getElementById('fieldEmail').value.trim();
+      resendOtpBtn.disabled = true;
+      try {
+        await fbAuth.sendSignInLinkToEmail(userEmail, actionCodeSettings);
+        window.localStorage.setItem('mv_pending_email', userEmail);
+        otpError.textContent = '';
+        beginResendCooldown();
+      } catch (err) {
+        otpError.textContent = (err && err.message) ? err.message : 'Could not resend. Try again shortly.';
+        resendOtpBtn.disabled = false;
+      }
+    });
+
+    backToDetailsBtn.addEventListener('click', () => {
+      showCredentialsStep();
+    });
+
+    function beginResendCooldown() {
+      let seconds = 60;
+      resendCooldownActive = true;
+      resendOtpBtn.disabled = true;
+      resendOtpBtn.textContent = `Resend link (${seconds}s)`;
+      const cooldownInterval = setInterval(() => {
+        seconds -= 1;
+        if (seconds <= 0) {
+          clearInterval(cooldownInterval);
+          resendCooldownActive = false;
+          resendOtpBtn.disabled = false;
+          resendOtpBtn.textContent = 'Resend link';
+        } else {
+          resendOtpBtn.textContent = `Resend link (${seconds}s)`;
+        }
+      }, 1000);
+    }
+
+    function completeLogin(userName, userEmail) {
+      const successAudio = document.getElementById('soundSuccess');
+      if (successAudio) { successAudio.currentTime = 0; successAudio.volume = 0.5; successAudio.play().catch(()=>{}); }
+
+      // ── MathVanguard Integration ──
+      localStorage.setItem('mv_li', '1');
+      localStorage.setItem('mv_un', userName);
+      localStorage.setItem('mv_ue', userEmail);
+
+      comingSoonOverlay.style.display = 'flex';
+      gsap.to(comingSoonOverlay, { opacity: 1, duration: 0.4, ease: "power2.out" });
+      gsap.to(comingSoonBox, { scale: 1, opacity: 1, duration: 0.5, delay: 0.1, ease: "back.out(1.2)" });
+
+      setTimeout(() => {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'EDUVERSE_LOGIN_SUCCESS', userName, userEmail }, '*');
+          window.opener.focus();
+          window.close();
+        } else {
+          window.location.href = 'mathvanguard.html';
+        }
+      }, 2000);
+    }
+
+    // ==========================================
+    // COMPLETE SIGN-IN IF RETURNING FROM THE EMAILED LINK
+    // ==========================================
+    (async function completeMagicLinkSignIn() {
+      if (!fbAuth.isSignInWithEmailLink(window.location.href)) return;
+
+      let userEmail = window.localStorage.getItem('mv_pending_email');
+      const userName = window.localStorage.getItem('mv_pending_name') || '';
+
+      if (!userEmail) {
+        userEmail = window.prompt('Confirm the email address you used to request this link:');
+      }
+      if (!userEmail) return;
+
+      try {
+        await fbAuth.signInWithEmailLink(userEmail, window.location.href);
+        window.localStorage.removeItem('mv_pending_email');
+        window.localStorage.removeItem('mv_pending_name');
+        window.history.replaceState({}, document.title, window.location.pathname);
+        completeLogin(userName || userEmail.split('@')[0], userEmail);
+      } catch (err) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        alert('That sign-in link is invalid or has expired. Please request a new one.');
+      }
+    })();
 
     window.closeComingSoonScreen = function() {
       const closeTL = gsap.timeline({
