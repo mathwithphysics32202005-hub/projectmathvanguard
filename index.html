@@ -726,16 +726,10 @@
               <div class="cyber-scanner-line"></div>
             </div>
 
-            <div class="input-field-container">
-              <input type="email" id="fieldEmail" placeholder=" " autocomplete="off">
-              <label for="fieldEmail">Email Address</label>
-              <div class="cyber-scanner-line"></div>
-            </div>
-
             <div class="hint-input-wrapper">
               <div class="input-field-container">
-                <input type="text" id="fieldAccessCode" placeholder=" " autocomplete="off">
-                <label for="fieldAccessCode" id="variableCodeLabel">Course Code</label>
+                <input type="email" id="fieldEmail" placeholder=" " autocomplete="off">
+                <label for="fieldEmail">Email Address</label>
                 <div class="cyber-scanner-line"></div>
               </div>
               <button type="button" class="hint-bulb-trigger" id="bulbTrigger">
@@ -744,7 +738,7 @@
             </div>
 
             <div class="hint-drawer-banner" id="hintDrawer">
-              <p>Join the Telegram channel to know the code</p>
+              <p>Need help signing in? Join our Telegram channel</p>
               <a href="https://t.me/+73Bjx4Oy6CZiOGI1" target="_blank" class="telegram-redirect-link">Telegram Channel</a>
             </div>
 
@@ -755,8 +749,9 @@
           </div>
 
           <div id="stepOtp">
-            <p class="otp-instruction">We sent a sign-in link to<br><strong id="otpEmailDisplay"></strong></p>
+            <p class="otp-instruction">📧 Check your email — we sent a sign-in link to<br><strong id="otpEmailDisplay"></strong></p>
             <p class="otp-instruction" style="margin-top:-14px;font-size:12px;">Open that inbox on this device and tap the link — it'll bring you right back here, signed in.</p>
+            <p class="otp-instruction" style="margin-top:-10px;font-size:12px;color:#fbbf24;">Don't see it? Please also check your Spam / Junk folder.</p>
             <p class="otp-error" id="otpError"></p>
             <div class="otp-meta-row">
               <button type="button" id="resendOtpBtn" class="text-link-btn">Resend link</button>
@@ -781,8 +776,6 @@
     const securityShield = document.getElementById('securityShield');
     const securityShieldText = document.getElementById('securityShieldText');
     const tabGeneral = document.getElementById('tabGeneral');
-    const variableCodeLabel = document.getElementById('variableCodeLabel');
-    const fieldAccessCode = document.getElementById('fieldAccessCode');
     const bulbTrigger = document.getElementById('bulbTrigger');
     const hintDrawer = document.getElementById('hintDrawer');
     const securePortalForm = document.getElementById('securePortalForm');
@@ -1051,8 +1044,6 @@
     // ==========================================
     tabGeneral.addEventListener('click', () => {
       tabGeneral.classList.add('active');
-      variableCodeLabel.innerText = "Course Code";
-      fieldAccessCode.value = "";
       evaluateSecuritySystemState();
     });
 
@@ -1088,19 +1079,13 @@
     function evaluateSecuritySystemState() {
       const name = document.getElementById('fieldName').value.trim();
       const email = document.getElementById('fieldEmail').value.trim();
-      const code = fieldAccessCode.value.trim();
 
-      if (!name || !email || !code) {
+      if (!name || !email) {
         updateHologramStatus('locked');
         return;
       }
 
-      const isVerified = (code === "MV202622005");
-      if (isVerified) {
-        updateHologramStatus('granted');
-      } else {
-        if(code.length >= 4) { updateHologramStatus('denied'); } else { updateHologramStatus('checking'); }
-      }
+      updateHologramStatus('granted');
     }
 
     function updateHologramStatus(state) {
@@ -1133,9 +1118,7 @@
     function checkFormValidationState() {
       const name = document.getElementById('fieldName').value.trim();
       const email = document.getElementById('fieldEmail').value.trim();
-      const code = fieldAccessCode.value.trim();
-      if (!name || !email || !code) return false;
-      return (code === "MV202622005");
+      return !!(name && email);
     }
 
     window.evaluateSecuritySystemState = checkFormValidationState;
@@ -1160,7 +1143,7 @@
       const centerOffsetX = cursorX - (bounds.width / 2);
       const centerOffsetY = cursorY - (bounds.height / 2);
 
-      if (fieldAccessCode.value.trim().length >= 4) {
+      if (document.getElementById('fieldEmail').value.trim().length >= 4) {
         gsap.to(parallaxCard, { x: centerOffsetX * 0.05, y: centerOffsetY * 0.05, duration: 0.2 });
       }
 
